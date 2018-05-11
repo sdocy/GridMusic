@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Grid Music</string>
+
+    <string name="numColumns">20</string>
+    <string name="playing">playing&#8230;%1$s</string>
+    <string name="paused">&lt;paused&gt;</string>
+    <string name="done">DONE</string>
+    <string name="nullval">NULL</string>
+    <string name="playgrid">PLAY GRID</string>
+    <string name="creategrid">CREATE GRID</string>
+    <string name="editgrid">EDIT GRID</string>
+    <string name="musicGrid">music grid</string>
+
+    <!-- music controls -->
+    <string name="skip_rewind">skip_rewind</string>
+    <string name="rewind">rewind</string>
+    <string name="play">play</string>
+    <string name="pause">pause</string>
+    <string name="fastforward">fastforward</string>
+    <string name="skip_fastforward">skip_fastforward</string>
+
+    <!-- settings strings -->
+    <string name="settings">settings</string>
+    <string name="backArrow">back arrow</string>
+    <string name="resetPlayed">Reset played grids.</string>
+    <string name="resettingPlayed">Resetting all played grids.</string>
+    <string name="oneSong">Playing one song per grid.</string>
+    <string name="allSongs">Playing all songs on each grid.</string>
+    <string name="editGrid">Edit Grid layout.</string>
+    <string name="notSupported">This feature is not available in the trial version.</string>
+
+    <!-- daily tips -->
+    <string name="tip">Tip :</string>
+    <string name="playTip1">Tap the settings icon to see ways to customize your Grid.</string>
+    <string name="playTip2">You can choose to play one song per grid or all songs on each grid.</string>
+    <string name="playTip3">Tap on any grid to select it to be played next.</string>
+    <string name="playTip4">Under settings, you can reset played grids, allowing them to be visited again.</string>
+    <string name="playTip5">Long press any grid to toggle it between played / not-played.</string>
+</resources>

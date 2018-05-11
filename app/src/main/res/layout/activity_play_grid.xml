@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/appBG"
+    android:padding="@dimen/gridPadding"
+    android:id="@+id/rootView"
+    tools:context="com.example.android.gridmusic.PlayGridActivity">
+
+    <!-- back arrow, artist info and settings icon -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_margin="4dp"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/backArrow"
+            android:layout_width="@dimen/settingsIconDimen"
+            android:layout_height="@dimen/settingsIconDimen"
+            android:layout_marginRight="16dp"
+            android:background="#000000"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/backArrow"
+            android:src="@drawable/arrow"/>
+
+        <TextView
+            android:id="@+id/playMusicText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/myBlue"
+            android:textSize="20sp"
+            android:layout_margin="@dimen/gridMargin"
+            android:layout_toRightOf="@id/backArrow"
+            android:lines="1"/>
+
+        <ImageView
+            android:id="@+id/settingsButton"
+            android:layout_width="@dimen/settingsIconDimen"
+            android:layout_height="@dimen/settingsIconDimen"
+            android:alpha="0.7"
+            android:background="#000000"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:layout_alignParentRight="true"
+            android:contentDescription="@string/settings"
+            android:src="@drawable/settings"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/playSongText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/myBlue"
+        android:textSize="25sp"
+        android:gravity="center"
+        android:lines="2"
+        android:layout_margin="@dimen/gridMargin"
+        android:text="@string/app_name" />
+
+    <!-- music play controls -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/control_skip_rewind"
+            style="@style/musicControl"
+            android:contentDescription="@string/skip_rewind"
+            android:src="@drawable/ctrlskiprewind"/>
+        <ImageView
+            android:id="@+id/control_rewind"
+            style="@style/musicControl"
+            android:contentDescription="@string/rewind"
+            android:src="@drawable/ctrlrewind"/>
+        <ImageView
+            android:id="@+id/control_play"
+            style="@style/musicControl"
+            android:contentDescription="@string/play"
+            android:src="@drawable/ctrlplay"/>
+        <ImageView
+            android:id="@+id/control_fastforward"
+            style="@style/musicControl"
+            android:contentDescription="@string/fastforward"
+            android:src="@drawable/ctrlfastforward"/>
+        <ImageView
+            android:id="@+id/control_skip_fastforward"
+            style="@style/musicControl"
+            android:contentDescription="@string/skip_fastforward"
+            android:src="@drawable/ctrlskipfastforward"/>
+    </LinearLayout>
+
+    <!-- settings layout -->
+    <LinearLayout
+        android:id="@+id/settingsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@drawable/layout_border"
+        android:padding="@dimen/gridPadding">
+
+        <TextView
+            android:id="@+id/resetPlayedGrids"
+            style="@style/settingsOption"
+            android:text="@string/resetPlayed" />
+
+        <TextView
+            android:id="@+id/songsPerGrid"
+            style="@style/settingsOption"
+            android:text="@string/oneSong" />
+
+        <TextView
+            android:id="@+id/editGrid"
+            style="@style/settingsOption"
+            android:text="@string/editGrid" />
+
+    </LinearLayout>
+
+    <!-- Grid -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <GridView
+                android:id="@+id/gridView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnWidth="@dimen/gridColumnWidth"
+                android:numColumns="@string/numColumns"
+                android:verticalSpacing="@dimen/gridPadding"
+                android:horizontalSpacing="@dimen/gridPadding"
+                android:stretchMode="columnWidth"
+                android:gravity="center"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+</LinearLayout>

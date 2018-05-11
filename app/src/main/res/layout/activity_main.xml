@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/appBG"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <ImageView
+        android:id="@+id/gridImage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/gridmusic"/>
+
+    <TextView
+        android:id="@+id/playGrid"
+        style="@style/mainButton"
+        android:text="@string/playgrid"/>
+
+    <TextView
+        android:id="@+id/createGrid"
+        style="@style/mainButton"
+        android:text="@string/creategrid"/>
+
+    <TextView
+        android:id="@+id/editGrid"
+        style="@style/mainButton"
+        android:text="@string/editgrid"/>
+
+</LinearLayout>

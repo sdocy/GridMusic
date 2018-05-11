@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- text colors -->
+    <color name="darkBlue">#000080</color>
+    <color name="myBlue">#0000ff</color>
+
+    <!-- grid colors -->
+    <color name="borderEmptyGrid">#000000</color>
+    <color name="borderNotPlayed">#ffffff</color>
+    <color name="filterNotPlayed">#00000000</color>
+    <color name="filterPlayed">#88000000</color>
+    <color name="filterPlaying">#aa0000ff</color>
+    <color name="filterNextToPlay">#aa00ff00</color>
+
+    <color name="appBG">#000000</color>
+</resources>

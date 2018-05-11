@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <dimen name="gridElemDimen">50dp</dimen>
+    <dimen name="gridElemBorder">1dp</dimen>
+    <dimen name="gridMargin">8dp</dimen>
+    <dimen name="gridPadding">4dp</dimen>
+    <!-- keep gridColumnWidth bigger than gridElemDimen -->
+    <dimen name="gridColumnWidth">60dp</dimen>
+
+    <dimen name="musicControlMargin">12dp</dimen>
+    <dimen name="settingsIconDimen">30dp</dimen>
+    <dimen name="settingsText">20dp</dimen>
+
+    <dimen name="mainButtonText">30dp</dimen>
+</resources>
