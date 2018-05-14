@@ -10,22 +10,20 @@ import java.util.Random;
 public class GridElement {
 
     int imageResourceId;            // grid image
-    boolean played;                 // has this grid been played?
+    boolean played = false;         // has this grid been played?
     int bgColor;                    // provides a border around the grid image
     int filterColor;                // filter color for different grid states
 
     private ArrayList<Song> songList;       // list of songs
-    private int numSongs;                   // how many songs in this grid
-    private int numSongsNotPlayed;          // how many songs in this grid have not been played yet
+    private int numSongs = 0;               // how many songs in this grid
+    private int numSongsNotPlayed = 0;      // how many songs in this grid have not been played yet
 
     private Random songRNG;             // for returning a random song from this grid
 
+    // int imageR - image resource id
     GridElement(int imageR) {
         imageResourceId = imageR;
-        played = false;
         songList = new ArrayList<>();
-        numSongs = 0;
-        numSongsNotPlayed = 0;
         songRNG = new Random();
 
         if (imageR == -1) {
@@ -37,8 +35,8 @@ public class GridElement {
     }
 
     // add a song to this grid
-    public void addSong(String song, String artist) {
-        Song newSong = new Song(song, artist);
+    public void addSong(String song, String artist, int audioR) {
+        Song newSong = new Song(song, artist, audioR);
 
         songList.add(newSong);
         numSongs++;
@@ -91,6 +89,11 @@ public class GridElement {
         } else {
             return songList.get(n);
         }
+    }
+
+    // get the index of the specified song
+    public int getSongIndex(Song s) {
+        return songList.indexOf(s);
     }
 
     // set all songs for this grid to not-played

@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,6 +26,8 @@ import android.os.Handler;
 // contains all code for playing a Grid
 public class PlayGridActivity extends AppCompatActivity implements OnClickListener {
 
+    Song currentSong;
+
     // stats for hardcoded grid for prototype
     private int numGridCols = 6;                // how many columns widde is the Grid?
     private int numGridElems;                   // total elements in the grid, including blank grids
@@ -31,16 +35,15 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     private int numNotPlayed = numPlayable;     // how many grids have not been played yet?
 
     private Handler handler = new Handler();
-    private int pickNextDelay = 1300;           // grid delay for non-music-playing prototype
+    private MediaPlayer mediaPlayer;
+    private MediaPlayer.OnCompletionListener songDoneListener;
 
     private GridAdapter gridAdapter;        // view adapter for the Grid
     private GridView gridView;
     private int prevGridIndex = -1;         // grid we played last time
     private int currGridIndex = -1;         // grid we are playing now, or have just chosen to play
     private int nextGridIndex = -1;         // grid to play next
-    private int albumPausedOn;              // when playing entire grids, this stores the track we were about
-                                            // to play when `pause` was pressed, so we can pick up where we
-                                            // left of when `p[lay` is pressed
+    private int playEntireGridIndex = -1;              // when playing entire grids, this stores the track we are currently playing
 
     // music control and display
     private boolean playingMusic = false;   // has user pressed play?
@@ -50,6 +53,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     private ImageView controlFastForward;
     private ImageView controlSkipFastForward;
     private TextView playMusicText;                 // shows playing/paused and artist info
+    private String playingMusicString;
     private TextView playSongText;                  // shows title of song being played
 
     private ImageView backArrowButton;              // go back to main menu
@@ -108,15 +112,15 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.born_in_the_usa));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("I'm On Fire", "Bruce Springsteen");
-        grid.addSong("Bobby Jean", "Bruce Springsteen");
-        grid.addSong("Glory Days", "Bruce Springsteen");
+        grid.addSong("I'm On Fire", "Bruce Springsteen", R.raw.im_on_fire);
+        grid.addSong("Bobby Jean", "Bruce Springsteen", R.raw.bobby_jean);
+        grid.addSong("Glory Days", "Bruce Springsteen", R.raw.glory_days);
 
         theGrid.add(new GridElement(R.drawable.very_best_of_the_eagles));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Desperado", "Eagles");
-        grid.addSong("Tequila Sunrise", "Eagles");
-        grid.addSong("Hotel California", "Eagles");
+        grid.addSong("Desperado", "Eagles", R.raw.desperado);
+        grid.addSong("Tequila Sunrise", "Eagles", R.raw.tequila_sunrise);
+        grid.addSong("Hotel California", "Eagles", R.raw.hotel_california);
 
         theGrid.add(new GridElement(-1));
 
@@ -129,41 +133,41 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.elton_john_greatest_hits));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Daniel", "Elton John");
-        grid.addSong("Rocket Man", "Elton John");
-        grid.addSong("Candle In The Wind", "Elton John");
+        grid.addSong("Daniel", "Elton John", R.raw.daniel);
+        grid.addSong("Rocket Man", "Elton John", R.raw.rocket_man);
+        grid.addSong("Candle In The Wind", "Elton John", R.raw.candle_in_the_wind);
 
         theGrid.add(new GridElement(R.drawable.abbey_road));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Maxwell's Silver Hammer", "Beatles");
-        grid.addSong("You Never Give Me Your Money", "Beatles");
-        grid.addSong("She Came In Through The Bathroom Window", "Beatles");
+        grid.addSong("Maxwell's Silver Hammer", "Beatles", R.raw.maxwells_silver_hammer);
+        grid.addSong("You Never Give Me Your Money", "Beatles", R.raw.you_never_give_me_your_money);
+        grid.addSong("She Came In Through The Bathroom Window", "Beatles", R.raw.she_came_in_through_the_bathroom);
 
 
         // row 2
         theGrid.add(new GridElement(R.drawable.fifty_one_fifty));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Dreams", "Van Halen");
-        grid.addSong("Summer Nights", "Van Halen");
-        grid.addSong("Inside", "Van Halen");
+        grid.addSong("Dreams", "Van Halen", R.raw.dreams);
+        grid.addSong("Summer Nights", "Van Halen", R.raw.summer_nights);
+        grid.addSong("Inside", "Van Halen", R.raw.inside);
 
         theGrid.add(new GridElement(R.drawable.van_halen));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Runnin' With The Devil", "Van Halen");
-        grid.addSong("Jamie's Cryin'", "Van Halen");
-        grid.addSong("Ice Cream Man", "Van Halen");
+        grid.addSong("Runnin' With The Devil", "Van Halen", R.raw.runnin_with_the_devil);
+        grid.addSong("Jamie's Cryin'", "Van Halen", R.raw.jamies_cryin);
+        grid.addSong("Ice Cream Man", "Van Halen", R.raw.ice_cream_man);
 
         theGrid.add(new GridElement(-1));
 
         theGrid.add(new GridElement(R.drawable.fleetwood_mac_greatest_hits));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Go Your Own Way", "Fleetwood Mac");
+        grid.addSong("Go Your Own Way", "Fleetwood Mac", R.raw.go_your_own_way);
 
         theGrid.add(new GridElement(R.drawable.best_of_david_bowie));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Space Oddity", "David Bowie");
-        grid.addSong("Ziggy Stardust", "David Bowie");
-        grid.addSong("Life On Mars", "David Bowie");
+        grid.addSong("Space Oddity", "David Bowie", R.raw.space_oddity);
+        grid.addSong("Ziggy Stardust", "David Bowie", R.raw.ziggy_stardust);
+        grid.addSong("Life On Mars", "David Bowie", R.raw.life_on_mars);
 
         theGrid.add(new GridElement(-1));
 
@@ -173,17 +177,17 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.synchronicity));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Synchronicity II", "Police");
-        grid.addSong("Every Breath You Take", "Police");
-        grid.addSong("King Of Pain", "Police");
+        grid.addSong("Synchronicity II", "Police", R.raw.synchronicity_ii);
+        grid.addSong("Every Breath You Take", "Police", R.raw.every_breath_you_take);
+        grid.addSong("King Of Pain", "Police", R.raw.king_of_pain);
 
         theGrid.add(new GridElement(-1));
 
         theGrid.add(new GridElement(R.drawable.point_of_know_return));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Point Of Know Return", "Kansas");
-        grid.addSong("Dust In The Wind", "Kansas");
-        grid.addSong("Nobody's Home", "Kansas");
+        grid.addSong("Point Of Know Return", "Kansas", R.raw.point_of_know_return);
+        grid.addSong("Dust In The Wind", "Kansas", R.raw.dust_in_the_wind);
+        grid.addSong("Nobody's Home", "Kansas", R.raw.nobodys_home);
 
         theGrid.add(new GridElement(-1));
         theGrid.add(new GridElement(-1));
@@ -194,60 +198,60 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.genesis));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Mama", "Genesis");
-        grid.addSong("Home By The Sea", "Genesis");
-        grid.addSong("Second Home By The Sea", "Genesis");
+        grid.addSong("Mama", "Genesis", R.raw.mama);
+        grid.addSong("Home By The Sea", "Genesis", R.raw.home_by_the_sea);
+        grid.addSong("Second Home By The Sea", "Genesis", R.raw.second_home_by_the_sea);
 
         theGrid.add(new GridElement(R.drawable.selling_england_by_the_pound));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Dancing With The Moonlight Knight", "Genesis");
-        grid.addSong("More Fool Me", "Genesis");
-        grid.addSong("The Cinema Show", "Genesis");
+        grid.addSong("Dancing With The Moonlight Knight", "Genesis", R.raw.dancing_with_the_moonlight_knight);
+        grid.addSong("More Fool Me", "Genesis", R.raw.more_fool_me);
+        grid.addSong("The Cinema Show", "Genesis", R.raw.the_cinema_show);
 
         theGrid.add(new GridElement(R.drawable.best_of_emerson_lake_and_palmer));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Fanfare For The Common Man", "Emerson, Lake and Palmer");
-        grid.addSong("C'est La Vie", "Emerson, Lake and Palmer");
-        grid.addSong("Lucky Man", "Emerson, Lake and Palmer");
+        grid.addSong("Fanfare For The Common Man", "Emerson, Lake and Palmer", R.raw.fanfare_for_the_common_man);
+        grid.addSong("C'est La Vie", "Emerson, Lake and Palmer", R.raw.cest_la_vie);
+        grid.addSong("Lucky Man", "Emerson, Lake and Palmer", R.raw.lucky_man);
 
         theGrid.add(new GridElement(R.drawable.chronicles));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Tom Sawyer", "Rush");
-        grid.addSong("Subdivisions", "Rush");
-        grid.addSong("Time Stands Still", "Rush");
+        grid.addSong("Tom Sawyer", "Rush", R.raw.tom_sawyer);
+        grid.addSong("Subdivisions", "Rush", R.raw.subdivisions);
+        grid.addSong("Time Stands Still", "Rush", R.raw.time_stand_still);
 
         theGrid.add(new GridElement(R.drawable.the_who_greatest_hits));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Love Reign O'er Me", "The Who");
-        grid.addSong("Eminence Front", "The Who");
+        grid.addSong("Love Reign O'er Me", "The Who", R.raw.love_reign_oer_me);
+        grid.addSong("Eminence Front", "The Who", R.raw.eminence_front);
 
 
         // row 5
         theGrid.add(new GridElement(R.drawable.led_zeppelin_iii));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Since I've Been Loving You", "Led Zeppelin");
-        grid.addSong("Gallows Pole", "Led Zeppelin");
-        grid.addSong("That's The Way", "Led Zeppelin");
+        grid.addSong("Since I've Been Loving You", "Led Zeppelin", R.raw.since_ive_been_loving_you);
+        grid.addSong("Gallows Pole", "Led Zeppelin", R.raw.gallows_pole);
+        grid.addSong("That's The Way", "Led Zeppelin", R.raw.thats_the_way);
 
         theGrid.add(new GridElement(-1));
 
         theGrid.add(new GridElement(R.drawable.a_trick_of_the_tail));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Mad Man Moon", "Genesis");
-        grid.addSong("Ripples", "Genesis");
-        grid.addSong("A Trick Of The Tail", "Genesis");
+        grid.addSong("Mad Man Moon", "Genesis", R.raw.mad_man_moon);
+        grid.addSong("Ripples", "Genesis", R.raw.ripples);
+        grid.addSong("A Trick Of The Tail", "Genesis", R.raw.a_trick_of_the_tail);
 
         theGrid.add(new GridElement(R.drawable.highlights));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Starship Trooper", "Yes");
-        grid.addSong("I've Seen All Good People", "Yes");
-        grid.addSong("Wondrous Stories", "Yes");
+        grid.addSong("Starship Trooper", "Yes", R.raw.starship_trooper);
+        grid.addSong("I've Seen All Good People", "Yes", R.raw.ive_seen_all_good_people);
+        grid.addSong("Wondrous Stories", "Yes", R.raw.wondrous_stories);
 
         theGrid.add(new GridElement(R.drawable.boston));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("More Than A Feeling", "Boston");
-        grid.addSong("Peace Of Mind", "Boston");
-        grid.addSong("Hitch A Ride", "Boston");
+        grid.addSong("More Than A Feeling", "Boston", R.raw.more_than_a_feeling);
+        grid.addSong("Peace Of Mind", "Boston", R.raw.peace_of_mind);
+        grid.addSong("Hitch A Ride", "Boston", R.raw.hitch_a_ride);
 
         theGrid.add(new GridElement(-1));
 
@@ -255,21 +259,21 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         // row 6
         theGrid.add(new GridElement(R.drawable.led_zeppelin_iv));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("StairWay To Heaven", "Led Zeppelin");
-        grid.addSong("Misty Mountain Hop", "Led Zeppelin");
-        grid.addSong("When The Levee Breaks", "Led Zeppelin");
+        grid.addSong("StairWay To Heaven", "Led Zeppelin", R.raw.stairway_to_heaven);
+        grid.addSong("Misty Mountain Hop", "Led Zeppelin", R.raw.misty_mountain_hop);
+        grid.addSong("When The Levee Breaks", "Led Zeppelin", R.raw.when_the_levee_breaks);
 
         theGrid.add(new GridElement(R.drawable.dark_side_of_the_moon));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Us And Them", "Pink Floyd");
-        grid.addSong("Any Colour You Like", "Pink Floyd");
-        grid.addSong("Brain Damage", "Pink Floyd");
+        grid.addSong("Us And Them", "Pink Floyd", R.raw.us_and_them);
+        grid.addSong("Any Colour You Like", "Pink Floyd", R.raw.any_colour_you_like);
+        grid.addSong("Brain Damage", "Pink Floyd", R.raw.brain_damage);
 
         theGrid.add(new GridElement(R.drawable.wish_you_were_here));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Shine On You Crazy Diamond", "Pink Floyd");
-        grid.addSong("Have A Cigar", "Pink Floyd");
-        grid.addSong("Wish You Were Here", "Pink Floyd");
+        grid.addSong("Shine On You Crazy Diamond", "Pink Floyd", R.raw.shine_on_you_crazy_diamond);
+        grid.addSong("Have A Cigar", "Pink Floyd", R.raw.have_a_cigar);
+        grid.addSong("Wish You Were Here", "Pink Floyd", R.raw.wish_you_were_here);
 
         theGrid.add(new GridElement(-1));
         theGrid.add(new GridElement(-1));
@@ -282,17 +286,17 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.rock_and_soul_part_one));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Sara Smile", "Hall and Oates");
-        grid.addSong("She's Gone", "Hall and Oates");
-        grid.addSong("Maneater", "Hall and Oates");
+        grid.addSong("Sara Smile", "Hall and Oates", R.raw.sara_smile);
+        grid.addSong("She's Gone", "Hall and Oates", R.raw.shes_gone);
+        grid.addSong("Maneater", "Hall and Oates", R.raw.maneater);
 
         theGrid.add(new GridElement(R.drawable.bill_withers_greatest_hits));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Ain't No Sunshine", "Bill Withers");
+        grid.addSong("Ain't No Sunshine", "Bill Withers", R.raw.aint_no_sunshine);
 
         theGrid.add(new GridElement(R.drawable.leave_your_hat_on));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("I'd Rather Go Blind", "Michael Grimm");
+        grid.addSong("I'd Rather Go Blind", "Michael Grimm", R.raw.id_rather_go_blind);
 
         theGrid.add(new GridElement(-1));
 
@@ -303,15 +307,15 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.eric_clapton_unplugged));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Before You Accuse Me", "Eric Clapton");
-        grid.addSong("Layla", "Eric Clapton");
-        grid.addSong("Running On Faith", "Eric Clapton");
+        grid.addSong("Before You Accuse Me", "Eric Clapton", R.raw.before_you_accuse_me);
+        grid.addSong("Layla", "Eric Clapton", R.raw.layla);
+        grid.addSong("Running On Faith", "Eric Clapton", R.raw.running_on_faith);
 
         theGrid.add(new GridElement(R.drawable.twenty_four_nights));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Old Love", "Eric Clapton");
-        grid.addSong("Wonderful Tonight", "Eric Clapton");
-        grid.addSong("Hard Times", "Eric Clapton");
+        grid.addSong("Old Love", "Eric Clapton", R.raw.old_love);
+        grid.addSong("Wonderful Tonight", "Eric Clapton", R.raw.wonderful_tonight);
+        grid.addSong("Hard Times", "Eric Clapton", R.raw.hard_times);
 
         theGrid.add(new GridElement(-1));
         theGrid.add(new GridElement(-1));
@@ -322,21 +326,21 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.best_of_hooker_and_heat));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("You Talk Too Much", "Hooker and Heat");
-        grid.addSong("I Got My Eyes On You", "Hooker and Heat");
-        grid.addSong("Wiskey And Wimmen'", "Hooker and Heat");
+        grid.addSong("You Talk Too Much", "Hooker and Heat", R.raw.you_talk_too_much);
+        grid.addSong("I Got My Eyes On You", "Hooker and Heat", R.raw.i_got_my_eyes_on_you);
+        grid.addSong("Wiskey And Wimmen'", "Hooker and Heat", R.raw.wiskey_and_wimmen);
 
         theGrid.add(new GridElement(R.drawable.best_of_muddy_waters));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("I Just Want To Make Love To You", "Muddy Waters");
-        grid.addSong("Honey Bee", "Muddy Waters");
-        grid.addSong("Hoochie Coochie Man", "Muddy Waters");
+        grid.addSong("I Just Want To Make Love To You", "Muddy Waters", R.raw.i_just_want_to_make_love_to_you);
+        grid.addSong("Honey Bee", "Muddy Waters", R.raw.honey_bee);
+        grid.addSong("Hoochie Coochie Man", "Muddy Waters", R.raw.hoochie_coochie_man);
 
         theGrid.add(new GridElement(R.drawable.live_at_carnegie_hall));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Dirty Pool", "Stevie Ray Vaughan");
-        grid.addSong("TheThings That I Used To Do", "Stevie Ray Vaughan");
-        grid.addSong("Lenny", "Stevie Ray Vaughan");
+        grid.addSong("Dirty Pool", "Stevie Ray Vaughan", R.raw.dirty_pool);
+        grid.addSong("The Things That I Used To Do", "Stevie Ray Vaughan", R.raw.the_things_that_i_used_to_do);
+        grid.addSong("Lenny", "Stevie Ray Vaughan",  R.raw.lenny);
 
         theGrid.add(new GridElement(-1));
         theGrid.add(new GridElement(-1));
@@ -347,15 +351,15 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.gang_related));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Staring Through My Rearview", "2Pac");
+        grid.addSong("Staring Through My Rearview", "2Pac", R.raw.staring_through_my_rearview);
 
         theGrid.add(new GridElement(-1));
 
         theGrid.add(new GridElement(R.drawable.sky_is_crying));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("The Sky Is Crying", "Stevie Ray Vaughan");
-        grid.addSong("Little Wing", "Stevie Ray Vaughan");
-        grid.addSong("Life By The Drop", "Stevie Ray Vaughan");
+        grid.addSong("The Sky Is Crying", "Stevie Ray Vaughan", R.raw.the_sky_is_crying);
+        grid.addSong("Little Wing", "Stevie Ray Vaughan", R.raw.little_wing);
+        grid.addSong("Life By The Drop", "Stevie Ray Vaughan", R.raw.life_by_the_drop);
 
         theGrid.add(new GridElement(-1));
         theGrid.add(new GridElement(-1));
@@ -366,7 +370,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         theGrid.add(new GridElement(R.drawable.recovery));
         grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Love The Way You Lie", "Eminim");
+        grid.addSong("Love The Way You Lie", "Eminim", R.raw.love_the_way_you_lie);
 
         theGrid.add(new GridElement(-1));
         theGrid.add(new GridElement(-1));
@@ -429,6 +433,9 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             case R.id.control_play :    playPause();
                                         break;
 
+            case R.id.control_skip_fastforward:     skipFastForward();
+                                                    break;
+
             case R.id.backArrow :       goBackToMainMenu();
                                         break;
 
@@ -481,6 +488,22 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
                 return userToggledPlayState(position);
             }
         });
+
+        songDoneListener = (new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                if (mediaPlayer != null) {
+                    mediaPlayer.release();
+                    mediaPlayer = null;
+                }
+
+                if (playEntireGrid) {
+                    playAllSongs(theGrid.get(currGridIndex));
+                } else {
+                    pickNextGrid();
+                }
+            }
+        });
     }
 
     // ***************************
@@ -500,28 +523,33 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             playingMusic = true;
             if (currGridIndex == -1) {
                 // we are just starting out, pick a starting grid
-                if (pickStartingGrid() == 0) {
-                    if (!playEntireGrid) {
-                        // if we are playing the entire grid, playAllSongs() will post
-                        // pickNextGrid() after playing all songs
-                        handler.postDelayed(pickNextGrid, pickNextDelay);
-                    }
-                }
+                pickStartingGrid();
             } else {
                 // we were paused, continue where we left off
-
-                if (!playEntireGrid) {
-                    // if we are playing the entire grid, playAllSongs() will post
-                    // pickNextGrid() after playing all songs
-                    handler.postDelayed(pickNextGrid, 0);
-                } else {
-                    handler.postDelayed(playAllSongs(albumPausedOn, theGrid.get(currGridIndex)), 0);
-                }
+                playMusicText.setText(playingMusicString);
+                mediaPlayer.start();
             }
         } else {
             // music currently playing, pause it
             playingMusic = false;
             playMusicText.setText(R.string.paused);
+            mediaPlayer.pause();
+        }
+    }
+
+    // user pressed skip-fastforward
+    // stop song and call completion listener
+    private void skipFastForward() {
+        if (mediaPlayer != null) {
+            // we might be paused, transition back to playing
+            playingMusic = true;
+
+            // flashy flash the `skip-fastfforward` button when you press it
+            controlSkipFastForward.setColorFilter(Color.WHITE);
+            handler.postDelayed(turnOffFilter(controlSkipFastForward), 100);
+
+            mediaPlayer.stop();
+            songDoneListener.onCompletion(mediaPlayer);
         }
     }
 
@@ -597,6 +625,8 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     }
 
     // set all played grids to not-played
+    // All grids are reset if we are not currently playing music.
+    // If we are playing music, then the currently playing grid is not reset.
     private void resetGrids() {
         // find arraylist index for the randomly chosen playable grid element
         for (int index = 0; index < numGridElems; index++) {
@@ -604,6 +634,11 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
             // skip empty and already played grid elements
             if (g.isBlank())  {
+                continue;
+            }
+
+            if ((index == currGridIndex) && (playingMusic)) {
+                // don't reset the grid that is currently playing
                 continue;
             }
 
@@ -615,7 +650,10 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         }
 
         // minus one to account for the song currently being played
-        numNotPlayed = numPlayable - 1;
+        numNotPlayed = numPlayable;
+        if (playingMusic) {
+            numNotPlayed--;
+        }
 
         // tell adapter to update the view
         gridAdapter.notifyDataSetChanged();
@@ -632,6 +670,13 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         }
 
         playEntireGrid = !playEntireGrid;
+
+        if (currGridIndex != -1) {
+            // if we have a grid we are playing, we should start playEntireGrid with
+            // the next song from this grid
+            playEntireGridIndex = theGrid.get(currGridIndex).getSongIndex(currentSong);
+        }
+
     }
 
 
@@ -654,17 +699,17 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // pick a grid to roam from
     //      return 0 if we find a grid to play
     //      return 1 if there are no more unplayed grids left
-    private int pickStartingGrid() {
+    private void pickStartingGrid() {
         // make sure there is a grid element that has not been played
         if (numNotPlayed <= 0) {
             playMusicText.setText(R.string.done);
             playSongText.setText("");
             playingMusic = false;
             controlPlay.setImageResource(R.drawable.ctrlplay);
-            myTools.showToast(this.getString(R.string.done));
             resetGrids();
+            currGridIndex = -1;
             myTools.vibrate(500);
-            return 1;
+            return;
         }
 
         if (nextGridIndex != -1) {
@@ -675,19 +720,11 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             // no grid assigned, find one
             playGrid(getRandomNotPlayed());
         }
-
-        return 0;
     }
 
     // find the next grid to play, either one the user has chosen,
     // or an adjacent, non-blank, non-played grid
-    private final Runnable pickNextGrid = new Runnable() {
-        public void run() {
-            // don't start new grid plays if we are paused
-            if (!playingMusic) {
-                return;
-            }
-
+    private void pickNextGrid() {
             if (nextGridIndex == -1) {
                 // user has not set a next grid to play, find one
                 nextGridIndex = getRandomDirIndex();
@@ -698,26 +735,14 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
                 // we could not find an adjacent grid to play
                 // so pick a new starting grid.
                 prevGridIndex = currGridIndex;
-                if (pickStartingGrid() == 0) {
-                    if (!playEntireGrid) {
-                        // if we are playing the entire grid, playAllSongs() will post
-                        // pickNextGrid() after playing all songs
-                        handler.postDelayed(pickNextGrid, pickNextDelay);
-                    }
-                }
+                pickStartingGrid();
             } else {
                 // we have a next grid to play
                 playGrid(nextGridIndex);
                 nextGridIndex = -1;
-
-                if (!playEntireGrid) {
-                    // if we are playing the entire grid, playAllSongs() will post
-                    // pickNextGrid() after playing all songs
-                    handler.postDelayed(pickNextGrid, pickNextDelay);
-                }
             }
         }
-    };
+
 
     // Return index of a random playable grid element.
     // Throw assertion if we can't find a playable grid element.
@@ -821,17 +846,29 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         if (!playEntireGrid) {
             getSongToPlay(elem);
         } else {
-            handler.postDelayed(playAllSongs(0, elem), 0);
+            playAllSongs(elem);
         }
 
     }
 
     // get a random song from the specified grid to play
     private void getSongToPlay(GridElement grid) {
-        Song nextSong = grid.getRandomSongNotPlayed(true);
+        currentSong = grid.getRandomSongNotPlayed(true);
 
-        if (nextSong != null) {
-            displaySongInfo(nextSong.songName, nextSong.artistName);
+        if (currentSong != null) {
+            displaySongInfo(currentSong.songName, currentSong.artistName);
+
+            // start song playback
+            if (mediaPlayer != null) {
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+
+            mediaPlayer = MediaPlayer.create(this, currentSong.audioResource);
+            setCompletionListener();
+
+            Log.e("SONG_LOG", currentSong.songName);
+            mediaPlayer.start();
         } else {
             displaySongInfo(this.getString(R.string.nullval), this.getString(R.string.nullval));
         }
@@ -840,30 +877,39 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // show the title and artist info for the song being played
     private void displaySongInfo(String song, String artist) {
         playSongText.setText(song);
-        String playing = String.format(this.getString(R.string.playing), artist);
-        playMusicText.setText(playing);
+        playingMusicString = String.format(this.getString(R.string.playing), artist);
+        playMusicText.setText(playingMusicString);
     }
 
     // recursively play all songs in this grid
-    private Runnable playAllSongs(final int songIndex, final GridElement elem) {
-        return new Runnable() {
-            public void run() {
-                if (!playingMusic) {
-                    // user hit pause, save our place in the album for when play is pressed
-                    albumPausedOn = songIndex;
-                    return;
-                }
+    private void playAllSongs(GridElement elem) {
+        playEntireGridIndex++;
 
-                Song s = elem.getNthSong(songIndex);
-                if (s != null) {
-                    displaySongInfo(s.songName, s.artistName);
-                    handler.postDelayed(playAllSongs(songIndex + 1, elem), pickNextDelay);
-                } else {
-                    handler.postDelayed(pickNextGrid, 0);
-                }
+        currentSong = elem.getNthSong(playEntireGridIndex);
+        if (currentSong != null) {
+            displaySongInfo(currentSong.songName, currentSong.artistName);
 
+            // start song playback
+            if (mediaPlayer != null) {
+                mediaPlayer.release();
+                mediaPlayer = null;
             }
-        };
+
+            mediaPlayer = MediaPlayer.create(this, currentSong.audioResource);
+            setCompletionListener();
+
+            Log.e("SONG_LOG", currentSong.songName);
+            mediaPlayer.start();
+        } else {
+            playEntireGridIndex = -1;
+            pickNextGrid();
+        }
+    }
+
+    void setCompletionListener() {
+
+
+        mediaPlayer.setOnCompletionListener(songDoneListener);
     }
 
     // Set grid color to correct filter based on played state.
