@@ -66,8 +66,10 @@ public class MainActivity extends AppCompatActivity {
                 // Create a new intent to open the activity
                 Intent playGridIntent = new Intent(MainActivity.this, PlayGridActivity.class);
 
-                myTools.vibrate(50);
+                myTools.vibrate(GeneralTools.touchVibDelay);
 
+                // highlight view text when pressed
+                myTools.flashText((TextView) view, R.color.highlightBlue, R.color.MainMenuTextColor, 75);
 
                 // I noticed when going back to the main menu that the playGrid activity
                 // continued to run (I saw the toast popup when it completed), so I

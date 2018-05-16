@@ -8,7 +8,7 @@
     <!-- keep gridColumnWidth bigger than gridElemDimen -->
     <dimen name="gridColumnWidth">60dp</dimen>
 
-    <dimen name="musicControlMargin">12dp</dimen>
+    <dimen name="musicControlMargin">18dp</dimen>
     <dimen name="settingsIconDimen">30dp</dimen>
     <dimen name="settingsText">20dp</dimen>
 

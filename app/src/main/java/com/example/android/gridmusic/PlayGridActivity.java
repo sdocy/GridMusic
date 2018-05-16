@@ -3,8 +3,11 @@ package com.example.android.gridmusic;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,6 +42,9 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     private MediaPlayer mediaPlayer;
     private MediaPlayer.OnCompletionListener songDoneListener;
 
+    private AudioManager audioMgr;
+    private AudioManager.OnAudioFocusChangeListener audioFocusListener = null;
+
     private GridAdapter gridAdapter;        // view adapter for the Grid
     private GridView gridView;
     private int prevGridIndex = -1;         // grid we played last time
@@ -48,9 +55,8 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // music control and display
     private boolean playingMusic = false;   // has user pressed play?
     private ImageView controlPlay;
+    private ImageView controlStop;
     private ImageView controlSkipRewind;
-    private ImageView controlRewind;
-    private ImageView controlFastForward;
     private ImageView controlSkipFastForward;
     private TextView playMusicText;                 // shows playing/paused and artist info
     private String playingMusicString;
@@ -394,9 +400,8 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         // views for music control and display
         controlPlay = findViewById(R.id.control_play);
+        controlStop = findViewById(R.id.control_stop);
         controlSkipRewind = findViewById(R.id.control_skip_rewind);
-        controlRewind = findViewById(R.id.control_rewind);
-        controlFastForward = findViewById(R.id.control_fastforward);
         controlSkipFastForward = findViewById(R.id.control_skip_fastforward);
         playMusicText = findViewById(R.id.playMusicText);
         playSongText = findViewById(R.id.playSongText);
@@ -414,6 +419,8 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         myTools = new GeneralTools(this);
 
         initTips();
+
+        audioMgr = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
     }
 
     // initialize and display a usage tip
@@ -428,35 +435,6 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         myTools.showToast(this.getString(R.string.tip) + " " + playTips.get(tip));
     }
 
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.control_play :    playPause();
-                                        break;
-
-            case R.id.control_skip_fastforward:     skipFastForward();
-                                                    break;
-
-            case R.id.backArrow :       goBackToMainMenu();
-                                        break;
-
-            case R.id.settingsButton :  openSettings();
-                                        break;
-
-            case R.id.resetPlayedGrids :// These are not inside resetGrids() so they don't happen
-                                        // when the auto-reset occurs after all grids are played.
-                                        myTools.vibrate(50);
-                                        myTools.showToast(PlayGridActivity.this.getString(R.string.resettingPlayed));
-
-                                        resetGrids();
-                                        break;
-
-            case R.id.songsPerGrid :    changeSongsPerGrid();
-                                        break;
-
-            default :                   myTools.notSupported();
-        }
-    }
-
     // init OnClickListeners
     private void initListeners() {
 
@@ -468,8 +446,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         // features currently not implemented
         controlSkipRewind.setOnClickListener(this);
-        controlRewind.setOnClickListener(this);
-        controlFastForward.setOnClickListener(this);
+        controlStop.setOnClickListener(this);
         controlSkipFastForward.setOnClickListener(this);
         editGridText.setOnClickListener(this);
 
@@ -504,19 +481,101 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
                 }
             }
         });
+
+        audioFocusListener = new AudioManager.OnAudioFocusChangeListener() {
+            public void onAudioFocusChange(int focusChange) {
+                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                    // Pause playback because your Audio Focus was
+                    // temporarily stolen, but will be back soon.
+                    // i.e. for a phone call
+                    if (mediaPlayer != null) {
+                        playPause(false);
+                    }
+                } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                    // Stop playback, because you lost the Audio Focus.
+                    // i.e. the user started some other playback app
+                    // Remember to unregister your controls/buttons here.
+                    // And release the kra — Audio Focus!
+                    // You’re done.
+                    stopMusic(false);
+                } else if (focusChange ==
+                        AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                    // Lower the volume, because something else is also
+                    // playing audio over you.
+                    // i.e. for notifications or navigation directions
+                    // Depending on your audio playback, you may prefer to
+                    // pause playback here instead. You do you.
+                    if (mediaPlayer != null) {
+                        playPause(false);
+                    }
+                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                    // Resume playback, because you hold the Audio Focus
+                    // again!
+                    // i.e. the phone call ended or the nav directions
+                    // are finished
+                    // If you implement ducking and lower the volume, be
+                    // sure to return it to normal here, as well.
+                    if (mediaPlayer != null) {
+                        playPause(false);
+                    }
+                }
+            }
+        };
+    }
+
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.control_play :    playPause(true);
+                break;
+
+            case R.id.control_stop:     stopMusic(true);
+                break;
+
+            case R.id.control_skip_fastforward:     skipFastForward();
+                break;
+
+            case R.id.backArrow :       goBackToMainMenu();
+                break;
+
+            case R.id.settingsButton :  openSettings();
+                break;
+
+            case R.id.resetPlayedGrids :    resetGrids(true);
+                                            break;
+
+            case R.id.songsPerGrid :    changeSongsPerGrid();
+                break;
+
+            default :                   myTools.notSupported();
+        }
     }
 
     // ***************************
     // Methods called by listeners
     // ***************************
 
-    // user pressed play / pause, start or stop music play
-    private void playPause() {
-        myTools.vibrate(50);
+    // user pressed play / pause or we lost / gained audio focus, start or stop music play
+    private void playPause(boolean fromUser) {
+        if (fromUser) {
+            // this call is from a user click, provide tactile feedback
+            myTools.vibrate(GeneralTools.touchVibDelay);
 
-        // flashy flash the `play` button when you press it
-        controlPlay.setColorFilter(Color.WHITE);
-        handler.postDelayed(turnOffFilter(controlPlay), 100);
+            // flashy flash the `play` button when you press it
+            controlPlay.setColorFilter(Color.WHITE);
+            handler.postDelayed(turnOffFilter(controlPlay), 100);
+
+            if (!playingMusic) {
+                // user wants to play, request audio focus
+                if (audioMgr.requestAudioFocus(audioFocusListener, AudioManager.STREAM_MUSIC,
+                        AudioManager.AUDIOFOCUS_GAIN) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    Log.e("ERROR", "Request for audio focus was denied.");
+                    return;
+                }
+            } else {
+                // user is pausing, release audio focus
+                audioMgr.abandonAudioFocus(audioFocusListener);
+            }
+        }
 
         if (!playingMusic) {
             // music not yet started or paused
@@ -537,6 +596,35 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         }
     }
 
+    // user pressed stop
+    private void stopMusic(boolean fromUser) {
+        if (mediaPlayer != null) {
+            if (fromUser) {
+                // this call is from a user click, provide tactile feedback
+                myTools.vibrate(GeneralTools.touchVibDelay);
+
+                // flashy flash the `stop` button when you press it
+                controlStop.setColorFilter(Color.WHITE);
+                handler.postDelayed(turnOffFilter(controlStop), 100);
+            }
+
+            playingMusic = false;
+
+            setGridState(currGridIndex, R.color.filterPlayed, true);
+
+            currGridIndex = -1;
+            currentSong = null;
+            playEntireGridIndex = -1;
+
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+
+            // release audio focus
+            audioMgr.abandonAudioFocus(audioFocusListener);
+        }
+    }
+
     // user pressed skip-fastforward
     // stop song and call completion listener
     private void skipFastForward() {
@@ -551,6 +639,44 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             mediaPlayer.stop();
             songDoneListener.onCompletion(mediaPlayer);
         }
+
+        //getMusicList();
+    }
+
+    // this code retrieved from https://gist.github.com/novoda/374533
+    private void getMusicList() {
+        Cursor cursor;
+
+        //Retrieve a list of Music files currently listed in the Media store DB via URI.
+
+        //Some audio may be explicitly marked as not being music
+        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+
+        String[] projection = {
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.DISPLAY_NAME,
+                MediaStore.Audio.Media.DURATION
+        };
+
+        cursor = this.managedQuery(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                null,
+                null);
+
+        List<String> songs = new ArrayList<String>();
+        while(cursor.moveToNext()){
+            songs.add(cursor.getString(0) + "||" + cursor.getString(1) + "||" +   cursor.getString(2) + "||" +   cursor.getString(3) + "||" +  cursor.getString(4) + "||" +  cursor.getString(5));
+        }
+
+        Log.e("GETSONGS", "got " + songs.size() + " songs");
+        for (String s : songs) {
+            Log.e("GETSONGS", s);
+        }
     }
 
     // user clicked a grid, choose it to play next
@@ -562,7 +688,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             return;
         }
 
-        myTools.vibrate(50);
+        myTools.vibrate(GeneralTools.touchVibDelay);
 
         if (nextGridIndex != -1) {
             GridElement currNextGrid = theGrid.get(nextGridIndex);
@@ -578,12 +704,12 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     private boolean userToggledPlayState(int position) {
         GridElement g = theGrid.get(position);
 
-        // ignore presses on blank grids
+        // ignore presses on blank grids and the currently playing grid
         if (g.isBlank() || (position == currGridIndex)) {
             return false;
         }
 
-        myTools.vibrate(50);
+        myTools.vibrate(GeneralTools.touchVibDelay);
 
         if (g.played) {
             numNotPlayed++;
@@ -603,7 +729,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         // Create a new intent to open the activity
         Intent mainMenuIntent = new Intent(PlayGridActivity.this, MainActivity.class);
 
-        myTools.vibrate(50);
+        myTools.vibrate(GeneralTools.touchVibDelay);
 
         startActivity(mainMenuIntent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -611,7 +737,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
     // user pressed settings icon, open the settings layout
     private void openSettings() {
-        myTools.vibrate(50);
+        myTools.vibrate(GeneralTools.touchVibDelay);
 
         if (showingSettings) {
             // settings are currently visible, hide them
@@ -627,7 +753,13 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // set all played grids to not-played
     // All grids are reset if we are not currently playing music.
     // If we are playing music, then the currently playing grid is not reset.
-    private void resetGrids() {
+    private void resetGrids(boolean fromUser) {
+        if (fromUser) {
+            myTools.flashText(resetPlayedGridsText, R.color.highlightBlue, R.color.myBlue, 75);
+            myTools.vibrate(GeneralTools.touchVibDelay);
+            myTools.showToast(PlayGridActivity.this.getString(R.string.resettingPlayed));
+        }
+
         // find arraylist index for the randomly chosen playable grid element
         for (int index = 0; index < numGridElems; index++) {
             GridElement g = theGrid.get(index);
@@ -661,7 +793,8 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
     // user pressed setting to change the songs played per grid
     private void changeSongsPerGrid() {
-        myTools.vibrate(50);
+        myTools.flashText(songsPerGridText, R.color.highlightBlue, R.color.myBlue, 75);
+        myTools.vibrate(GeneralTools.touchVibDelay);
 
         if (playEntireGrid) {
             songsPerGridText.setText(R.string.oneSong);
@@ -678,8 +811,6 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         }
 
     }
-
-
 
     // expand the GridView to hold the correct number of columns
     // I got this code from stackoverflow while back investigating horizontally scrolling GridViews.
@@ -705,10 +836,18 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             playMusicText.setText(R.string.done);
             playSongText.setText("");
             playingMusic = false;
+
             controlPlay.setImageResource(R.drawable.ctrlplay);
-            resetGrids();
+            resetGrids(false);
             currGridIndex = -1;
+            currentSong = null;
+            playEntireGridIndex = -1;
+
+            // release audio focus
+            audioMgr.abandonAudioFocus(audioFocusListener);
+
             myTools.vibrate(500);
+
             return;
         }
 

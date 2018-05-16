@@ -59,7 +59,7 @@
 				</div>
 				
 				<div>
-					<p><br/><br/>Version 2.0<br/></p>
+					<p><br/><br/>Version 2.0 March 14, 2018<br/></p>
 					
 					<div class="blink_me">
 						<strong>It plays music !!</strong><br/>
@@ -78,13 +78,36 @@
 				</div>
 				
 				<div>
+					<p><br/><br/>Version 2.1 March 15, 2018<br/></p>
+					<ul>
+						<li>Removed rewind / fastfoward buttons for now</li>
+						<li>Added stop button and implemented stop playing functionality</li>
+						<li>Implemented Audio Focus
+							<ul>
+								<li>app grabs focus when user presses PLAY</li>
+								<li>focus is kept until
+									<ul>
+										<li>player presses PAUSE</li>
+										<li>player presses STOP</li>
+										<li>player enters DONE state after playing all grids</li>
+									</ul>
+								</li>
+								<li>music playback pauses when the app losses focus (i.e. incoming phone call)</li>
+								<li>music playback continues when the app regains focus</li>
+							</ul>
+						</li>
+						<li>Highlight main menu button text when pressed</li>
+						<li>Highlight settings options text when pressed.</li>
+						<li>Got a code snippet working that discovers music files on the phone</li>
+					</ul>
+				</div>
+				
+				<div>
 					<p><br/><br/>TODO<br/></p>
 					
 					<ul>
-						<li>Investigate code for finding all music files on a device</li>
 						<li>Investigate code for getting album art from the music file</li>
 						<li>Investigate playing music from the phone rather than from in-app raw files</li>
-						<li>Play with implementing rewind and fastforward</li>
 						<li>See if I want to support skip-rewind</li>
 						<li>Build activity to create a Grid</li>
 						<li>See how to save and load Grids on device</li>

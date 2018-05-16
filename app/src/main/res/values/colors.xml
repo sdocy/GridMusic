@@ -3,6 +3,7 @@
     <!-- text colors -->
     <color name="darkBlue">#000080</color>
     <color name="myBlue">#0000ff</color>
+    <color name="highlightBlue">#b3f0ff</color>
 
     <!-- grid colors -->
     <color name="borderEmptyGrid">#000000</color>
@@ -13,4 +14,5 @@
     <color name="filterNextToPlay">#aa00ff00</color>
 
     <color name="appBG">#000000</color>
+    <color name="MainMenuTextColor">#8080ff</color>
 </resources>

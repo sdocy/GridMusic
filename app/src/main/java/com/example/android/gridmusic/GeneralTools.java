@@ -3,6 +3,7 @@ package com.example.android.gridmusic;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.widget.TextView;
@@ -13,6 +14,9 @@ public class GeneralTools {
 
     private Context myContext;
     private Vibrator vibrator;
+    private Handler handler = new Handler();
+
+    public final static int touchVibDelay = 50;
 
     GeneralTools(Context context) {
         myContext = context;
@@ -41,5 +45,21 @@ public class GeneralTools {
     // common message to show for non-supported functions
     public void notSupported() {
         showToast(myContext.getString(R.string.notSupported));
+    }
+
+    // briefly highlight text in a TextView
+    public void flashText(TextView v, int highlightColor, int origColor, int delay) {
+        v.setTextColor(myContext.getResources().getColor(highlightColor));
+        handler.postDelayed(turnOffHighlight(v, origColor), delay);
+    }
+
+    // turn off textView highlight
+    private Runnable turnOffHighlight(final TextView v, final int c) {
+        return new Runnable() {
+            public void run() {
+                v.setTextColor(myContext.getResources().getColor(c));
+
+            }
+        };
     }
 }

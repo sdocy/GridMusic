@@ -75,21 +75,26 @@
             style="@style/musicControl"
             android:contentDescription="@string/skip_rewind"
             android:src="@drawable/ctrlskiprewind"/>
-        <ImageView
+        <!--<ImageView
             android:id="@+id/control_rewind"
             style="@style/musicControl"
             android:contentDescription="@string/rewind"
-            android:src="@drawable/ctrlrewind"/>
+            android:src="@drawable/ctrlrewind"/>-->
+        <ImageView
+            android:id="@+id/control_stop"
+            style="@style/musicControl"
+            android:contentDescription="@string/play"
+            android:src="@drawable/ctrlstop"/>
         <ImageView
             android:id="@+id/control_play"
             style="@style/musicControl"
             android:contentDescription="@string/play"
             android:src="@drawable/ctrlplay"/>
-        <ImageView
+        <!--<ImageView
             android:id="@+id/control_fastforward"
             style="@style/musicControl"
             android:contentDescription="@string/fastforward"
-            android:src="@drawable/ctrlfastforward"/>
+            android:src="@drawable/ctrlfastforward"/>-->
         <ImageView
             android:id="@+id/control_skip_fastforward"
             style="@style/musicControl"
