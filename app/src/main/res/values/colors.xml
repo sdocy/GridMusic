@@ -12,6 +12,7 @@
     <color name="filterPlayed">#88000000</color>
     <color name="filterPlaying">#aa0000ff</color>
     <color name="filterNextToPlay">#aa00ff00</color>
+    <color name="filterErrorOnPlay">#aaff0000</color>
 
     <color name="appBG">#000000</color>
     <color name="MainMenuTextColor">#8080ff</color>

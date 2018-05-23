@@ -14,6 +14,8 @@ public class GridElement {
     int bgColor;                    // provides a border around the grid image
     int filterColor;                // filter color for different grid states
 
+    boolean hasSongError;
+
     private ArrayList<Song> songList;       // list of songs
     private int numSongs = 0;               // how many songs in this grid
     private int numSongsNotPlayed = 0;      // how many songs in this grid have not been played yet
@@ -23,6 +25,7 @@ public class GridElement {
     // int imageR - image resource id
     GridElement(int imageR) {
         imageResourceId = imageR;
+        hasSongError = false;
         songList = new ArrayList<>();
         songRNG = new Random();
 
@@ -35,8 +38,8 @@ public class GridElement {
     }
 
     // add a song to this grid
-    public void addSong(String song, String artist, int audioR) {
-        Song newSong = new Song(song, artist, audioR);
+    public void addSong(String song, String artist, String path) {
+        Song newSong = new Song(song, artist, path);
 
         songList.add(newSong);
         numSongs++;

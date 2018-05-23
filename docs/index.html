@@ -104,11 +104,25 @@
 				</div>
 				
 				<div>
+					<p><br/><br/>Version 2.2 March 20, 2018<br/></p>
+					<ul>
+						<li>App now plays songs from the phone rather than needing music resources contained within the app.  The pathnames are still
+							hard-coded until I get the activity for creating  playlists working.</li>
+						<li>Introduced code to handle errors when trying to play a song from the phone.  The grid is colored red to highlight the error
+							and a new song is chosen to play, according to the current grid play setting.</li>
+					</ul>
+				</div>
+				
+				<div>
 					<p><br/><br/>TODO<br/></p>
 					
 					<ul>
+						<li>In single play mode, if a user selects a grid, we skip that grid if all songs from it have already been played, perhaps we
+							should reset all songs to not played in this case and then choose a random one?</li>
+						<li>New feature - play all songs on a grid, in random order</li>
+						<li>Automatically start playing music when a grid is clicked on if music is not already playing, and player is not paused</li>
+						<li>Tap a green grid again to deselect it as the next grid to play</li>
 						<li>Investigate code for getting album art from the music file</li>
-						<li>Investigate playing music from the phone rather than from in-app raw files</li>
 						<li>See if I want to support skip-rewind</li>
 						<li>Build activity to create a Grid</li>
 						<li>See how to save and load Grids on device</li>
