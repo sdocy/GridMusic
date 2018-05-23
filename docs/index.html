@@ -28,120 +28,89 @@
 		</div>
 
 		<div>
-				<div>
-					<p>
-					<br/>An experiment using gridviews to provide customizable music playlists.  Normal playlists must be played
-					in order, randomly, or by the rules of some unknown so-called genius algorithm.  This prototype attempts to give
-					listeners control over the flow of their playlists, while still retaining some randomness in the playback to
-					keep playback from getting stale and predictable.<br/><br/>
-					Listeners lay out the songs, artists or albums for their playlist in a grid pattern.  Once playback has commenced,
-					the next song to play will be randomly chosen from adjacent playlist grids (vertically and horizontally adjacent
-					grids only.  If an unplayed choice is not available adjacent to the last played song, a new grid to start from is
-					randomly chosen.<br/><br/>
-					</p>
-				</div>
-				
-				<div>
-					<img class="small-image" style="border:3px dotted white" hspace="20" src="Grid3.png">
-					<img class="small-image" style="border:3px dotted white" hspace="20" src="Grid4.png">
-				</div>
-				
-				<div>
-					<br/><br/>Current implemented features :<br/>
-					<ul>
-						<li>Pause and resume playback.</li>
-						<li>Choose to play a single song per grid or all songs on the grid.</li>
-						<li>Tap on a grid to choose it to be played next.</li>
-						<li>Reset played grids so that they may be played again.</li>
-						<li>Toggle individual grids between played / not-played.</li>
-						<li>Settings may be changed while the grid choosing algorithm is running.</li>
-					</ul>
-				</div>
-				
-				<div>
-					<p><br/><br/>Version 2.0 March 14, 2018<br/></p>
-					
-					<div class="blink_me">
-						<strong>It plays music !!</strong><br/>
-					</div>
-					
-					<ul>
-						<li>Added a static set of songs matching my static Grid playlist to the app and figured out basic MediaPlayer
-							controls, starting and pausing music playback</li>
-						<li>Added  an OnCompletion listener for the MediaPlayer to start the next song when the current one finishes</li>
-						<li>Hooked up the skip-fastforward button to skip to the next song by stopping the current playback and explicitly
-							calling the MedioPlayer's OnCompletion() method</li>
-						<li>Fixed a bug when switching from single-play to album-play.  The album would use an old value for albumPlayIndex,
-							left-over from a previous album-play setting.  I had to implement a method to get the index of a song from a grid,
-							add a class variable to store the current playing song, and update albumPlayIndex when the album-play setting is chosen.</li>
-					</ul>
-				</div>
-				
-				<div>
-					<p><br/><br/>Version 2.1 March 15, 2018<br/></p>
-					<ul>
-						<li>Removed rewind / fastfoward buttons for now</li>
-						<li>Added stop button and implemented stop playing functionality</li>
-						<li>Implemented Audio Focus
-							<ul>
-								<li>app grabs focus when user presses PLAY</li>
-								<li>focus is kept until
-									<ul>
-										<li>player presses PAUSE</li>
-										<li>player presses STOP</li>
-										<li>player enters DONE state after playing all grids</li>
-									</ul>
-								</li>
-								<li>music playback pauses when the app losses focus (i.e. incoming phone call)</li>
-								<li>music playback continues when the app regains focus</li>
-							</ul>
-						</li>
-						<li>Highlight main menu button text when pressed</li>
-						<li>Highlight settings options text when pressed.</li>
-						<li>Got a code snippet working that discovers music files on the phone</li>
-						<li>Added custom app icon</li>
-					</ul>
-				</div>
-				
-				<div>
-					<p><br/><br/>Version 2.2 March 20, 2018<br/></p>
-					<ul>
-						<li>App now plays songs from the phone rather than needing music resources contained within the app.  The pathnames are still
-							hard-coded until I get the activity for creating  playlists working.</li>
-						<li>Introduced code to handle errors when trying to play a song from the phone.  The grid is colored red to highlight the error
-							and a new song is chosen to play, according to the current grid play setting.</li>
-					</ul>
-				</div>
-				
-				<div>
-					<p><br/><br/>TODO<br/></p>
-					
-					<ul>
-						<li>In single play mode, if a user selects a grid, we skip that grid if all songs from it have already been played, perhaps we
-							should reset all songs to not played in this case and then choose a random one?</li>
-						<li>New feature - play all songs on a grid, in random order</li>
-						<li>Automatically start playing music when a grid is clicked on if music is not already playing, and player is not paused</li>
-						<li>Tap a green grid again to deselect it as the next grid to play</li>
-						<li>Investigate code for getting album art from the music file</li>
-						<li>See if I want to support skip-rewind</li>
-						<li>Build activity to create a Grid</li>
-						<li>See how to save and load Grids on device</li>
-						<li>Go through the guide I found for building Android Audio Players</li>
-						<li>Go back and retry supporting different grid sizes</li>
-					</ul>
-				</div>
+			<p>
+			<br/>An experiment using gridviews to provide customizable music playlists.  Normal playlists must be played
+			in order, randomly, or by the rules of some unknown so-called genius algorithm.  This prototype attempts to give
+			listeners control over the flow of their playlists, while still retaining some randomness in the playback to
+			keep playback from getting stale and predictable.<br/><br/>
+			Listeners lay out the songs, artists or albums for their playlist in a grid pattern.  Once playback has commenced,
+			the next song to play will be randomly chosen from adjacent playlist grids (vertically and horizontally adjacent
+			grids only.  If an unplayed choice is not available adjacent to the last played song, a new grid to start from is
+			randomly chosen.<br/><br/>
+			</p>
+		</div>
+		
+		<div>
+			<img class="small-image" style="border:3px dotted white" hspace="20" src="Grid3.png">
+			<img class="small-image" style="border:3px dotted white" hspace="20" src="Grid4.png">
+		</div>
+		
+		<div>
+			<br/><br/>Current implemented features :<br/>
+			<ul>
+				<li>Pause and resume playback.</li>
+				<li>Choose to play a single song per grid or all songs on the grid.</li>
+				<li>Tap on a grid to choose it to be played next.</li>
+				<li>Reset played grids so that they may be played again.</li>
+				<li>Toggle individual grids between played / not-played.</li>
+				<li>Settings may be changed while the grid choosing algorithm is running.</li>
+			</ul>
 		</div>
 	</div>
 	
 	<div class="text-right center">
 		<p><br/><br/></p>
-		
 		<video width="360" height="640" controls preload >
 			<source src="grid_music_proto.mp4">
 		</video>
+	</div>
+</div>
+
+<div>
+	<div class="text-left indentleft">
+		<p><br/><br/>Version 2.0 March 14, 2018<br/></p>
+					
+		<div class="blink_me">
+			<strong>It plays music !!</strong><br/>
+		</div>
 		
-		<p><br/><br/></p>
+		<ul>
+			<li>Added a static set of songs matching my static Grid playlist to the app and figured out basic MediaPlayer
+				controls, starting and pausing music playback</li>
+			<li>Added  an OnCompletion listener for the MediaPlayer to start the next song when the current one finishes</li>
+			<li>Hooked up the skip-fastforward button to skip to the next song by stopping the current playback and explicitly
+				calling the MedioPlayer's OnCompletion() method</li>
+			<li>Fixed a bug when switching from single-play to album-play.  The album would use an old value for albumPlayIndex,
+				left-over from a previous album-play setting.  I had to implement a method to get the index of a song from a grid,
+				add a class variable to store the current playing song, and update albumPlayIndex when the album-play setting is chosen.</li>
+		</ul>
 		
+		<p><br/><br/>Version 2.1 March 15, 2018<br/></p>
+		<ul>
+			<li>Removed rewind / fastfoward buttons for now</li>
+			<li>Added stop button and implemented stop playing functionality</li>
+			<li>Implemented Audio Focus
+				<ul>
+					<li>app grabs focus when user presses PLAY</li>
+					<li>focus is kept until
+						<ul>
+							<li>player presses PAUSE</li>
+							<li>player presses STOP</li>
+							<li>player enters DONE state after playing all grids</li>
+						</ul>
+					</li>
+					<li>music playback pauses when the app losses focus (i.e. incoming phone call)</li>
+					<li>music playback continues when the app regains focus</li>
+				</ul>
+			</li>
+			<li>Highlight main menu button text when pressed</li>
+			<li>Highlight settings options text when pressed.</li>
+			<li>Got a code snippet working that discovers music files on the phone</li>
+			<li>Added custom app icon</li>
+		</ul>
+	</div>
+	
+	<div class="text-right center">		
 		<div>
 			<a href="play_design.png" target="_blank"><img class="small-image" src="play_design.png"></a>
 			<p>Flowchart v1.0 for play_music activity.</p>
@@ -150,11 +119,44 @@
 </div>
 
 <div>
-	<p><br/><br/></p>
+	<div class="text-left indentleft">
+		<p><br/><br/>Version 2.2 March 20, 2018<br/></p>
+		<ul>
+			<li>App now plays songs from the phone rather than needing music resources contained within the app.  The pathnames are still
+				hard-coded until I get the activity for creating  playlists working.</li>
+			<li>Introduced code to handle errors when trying to play a song from the phone.  The grid is colored red to highlight the error
+				and a new song is chosen to play, according to the current grid play setting.</li>
+		</ul>
+	</div>
+	
+	<div class="text-right center">
+		<p><br/><br/></p>
+		<video width="360" height="640" controls preload >
+			<source src="it_plays_music.mp4">
+		</video>
+	</div>
 </div>
 
-
+<div>
+	<div class="text-left indentleft">
+		<p><br/><br/>TODO<br/></p>
+					
+		<ul>
+			<li>In single play mode, if a user selects a grid, we skip that grid if all songs from it have already been played, perhaps we
+				should reset all songs to not played in this case and then choose a random one?</li>
+			<li>New feature - play all songs on a grid, in random order</li>
+			<li>Automatically start playing music when a grid is clicked on if music is not already playing, and player is not paused</li>
+			<li>Tap a green grid again to deselect it as the next grid to play</li>
+			<li>Investigate code for getting album art from the music file</li>
+			<li>See if I want to support skip-rewind</li>
+			<li>Build activity to create a Grid</li>
+			<li>See how to save and load Grids on device</li>
+			<li>Go through the guide I found for building Android Audio Players</li>
+			<li>Go back and retry supporting different grid sizes</li>
+		</ul>
+	</div>
 </div>
+
 </body>
 </html>
 
