@@ -534,28 +534,28 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.control_play :    playPause(true);
-                break;
+            case R.id.control_play :                playPause(true);
+                                                    break;
 
-            case R.id.control_stop:     stopMusic(true);
-                break;
+            case R.id.control_stop :                stopMusic(true);
+                                                    break;
 
-            case R.id.control_skip_fastforward:     skipFastForward();
-                break;
+            case R.id.control_skip_fastforward :    skipFastForward();
+                                                    break;
 
-            case R.id.backArrow :       goBackToMainMenu();
-                break;
+            case R.id.backArrow :                   goBackToMainMenu();
+                                                    break;
 
-            case R.id.settingsButton :  openSettings();
-                break;
+            case R.id.settingsButton :              openSettings();
+                                                    break;
 
-            case R.id.resetPlayedGrids :    resetGrids(true);
-                                            break;
+            case R.id.resetPlayedGrids :            resetGrids(true);
+                                                    break;
 
-            case R.id.songsPerGrid :    changeSongsPerGrid();
-                break;
+            case R.id.songsPerGrid :                changeSongsPerGrid();
+                                                    break;
 
-            default :                   myTools.notSupported();
+            default :                               myTools.notSupported();
         }
     }
 
@@ -563,7 +563,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // Methods called by listeners
     // ***************************
 
-    // user pressed play / pause or we lost / gained audio focus, start or stop music play
+    // user pressed play / pause or we lost / gained audio focus transiently, start or stop music play
     private void playPause(boolean fromUser) {
         if (fromUser) {
             // this call is from a user click, provide tactile feedback
@@ -605,7 +605,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         }
     }
 
-    // user pressed stop
+    // user pressed stop or we lost audio focus
     private void stopMusic(boolean fromUser) {
         if (mediaPlayer != null) {
             if (fromUser) {
@@ -637,7 +637,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     }
 
     // user pressed skip-fastforward
-    // stop song and call completion listener
+    // stop song and call completion listener to trigger picking of next song
     private void skipFastForward() {
         if (mediaPlayer != null) {
             // we might be paused, transition back to playing
@@ -826,16 +826,12 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     }
 
     // expand the GridView to hold the correct number of columns
-    // I got this code from stackoverflow while back investigating horizontally scrolling GridViews.
-    // https://stackoverflow.com/questions/16299633/android-gridview-with-both-horizontal-and-vertical-scrolbars-at-the-same-time
     private void setGridTotalWidth() {
         ViewGroup.LayoutParams layoutParams = gridView.getLayoutParams();
         layoutParams.width = convertDpToPixels(numGridCols * MainActivity.GRID_COLUMN_TOTALWIDTH, this);
         gridView.setLayoutParams(layoutParams);
     }
 
-    // I got this code from stackoverflow while back investigating horizontally scrolling GridViews.
-    // https://stackoverflow.com/questions/16299633/android-gridview-with-both-horizontal-and-vertical-scrolbars-at-the-same-time
     private int convertDpToPixels(float dp, Context context) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }
@@ -866,8 +862,9 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         if (nextGridIndex != -1) {
             // we have a grid assigned to play next
-            playGrid(nextGridIndex);
+            int toPlay = nextGridIndex;
             nextGridIndex = -1;
+            playGrid(toPlay);
         } else {
             // no grid assigned, find one
             playGrid(getRandomNotPlayed());
@@ -895,7 +892,6 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
                 // the album and we have to pick a new grid before returning here
                 nextGridIndex = -1;
                 playGrid(toPlay);
-                //nextGridIndex = -1;
             }
         }
 
