@@ -108,6 +108,15 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         initListeners();
     }
 
+    @Override
+    public void onBackPressed() {
+        // XXX not sure if this is the correct way to let PlayGrid continue when the back button
+        // is pressed but it seems to work fairly well
+        goBackToMainMenu();
+
+        //super.onBackPressed();
+    }
+
     // setup the Grid
     // -1 is a blank (empty) grid
     // The strings here have not been put into `strings.xml` since, in the final app
@@ -438,6 +447,11 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         playTips.add(this.getString(R.string.playTip3));
         playTips.add(this.getString(R.string.playTip4));
         playTips.add(this.getString(R.string.playTip5));
+        playTips.add(this.getString(R.string.playTip6));
+        playTips.add(this.getString(R.string.playTip7));
+        playTips.add(this.getString(R.string.playTip8));
+
+        playTips.add(this.getString(R.string.playTip9));
 
         int tip = RNG.nextInt(playTips.size());
         myTools.showToast(this.getString(R.string.tip) + " " + playTips.get(tip));
@@ -569,9 +583,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             // this call is from a user click, provide tactile feedback
             myTools.vibrate(GeneralTools.touchVibDelay);
 
-            // flashy flash the `play` button when you press it
-            controlPlay.setColorFilter(Color.WHITE);
-            handler.postDelayed(turnOffFilter(controlPlay), 100);
+
 
             if (!playingMusic) {
                 // user wants to play, request audio focus
@@ -589,6 +601,11 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         if (!playingMusic) {
             // music not yet started or paused
             playingMusic = true;
+
+            // flashy flash the `play` button when you press it
+            controlPlay.setColorFilter(Color.WHITE);
+            handler.postDelayed(turnOffFilter(controlPlay), 100);
+
             if (currGridIndex == -1) {
                 // we are just starting out, pick a starting grid
                 pickStartingGrid();
@@ -600,6 +617,11 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         } else {
             // music currently playing, pause it
             playingMusic = false;
+
+            // flashy flash the `play` button when you press it
+            controlPlay.setColorFilter(Color.WHITE);
+            handler.postDelayed(turnOffFilter(controlPlay), 100);
+
             playMusicText.setText(R.string.paused);
             mediaPlayer.pause();
         }
@@ -709,8 +731,21 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             setGridColor(currNextGrid, CURR_STATE_COLOR, true);
         }
 
+        if (nextGridIndex == position) {
+            // user clicked an already chosen grid, de-select it
+            nextGridIndex = -1;
+            return;
+        }
+
         nextGridIndex = position;
-        setGridColor(grid, R.color.filterNextToPlay, true);
+
+        if (!playingMusic && (currGridIndex == -1)) {
+            // we are not playing anything, so go ahead and start playing with user-chosen grid
+            playPause(false);
+        } else {
+            // we are currently playiong something or paused, so choose this grid as next play
+            setGridColor(grid, R.color.filterNextToPlay, true);
+        }
     }
 
     // user long-pressed a grid, switch its play state
@@ -1129,6 +1164,9 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         return new Runnable() {
             public void run() {
                 v.setColorFilter(null);
+
+                // we change the icon here so that the highlighted icon is the one shown when
+                // the user presses, we change it to the new one after we are done highlighting
                 if (playingMusic) {
                     controlPlay.setImageResource(R.drawable.ctrlpause);
                 } else {

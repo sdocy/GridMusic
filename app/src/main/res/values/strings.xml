@@ -36,4 +36,8 @@
     <string name="playTip3">Tap on any grid to select it to be played next.</string>
     <string name="playTip4">Under settings, you can reset played grids, allowing them to be visited again.</string>
     <string name="playTip5">Long press any grid to toggle it between played / not-played.</string>
+    <string name="playTip6">Choose any grid to begin Grid playback on that grid.</string>
+    <string name="playTip7">Hit PLAY to start Grid playback on a random grid.</string>
+    <string name="playTip8">Grids are greyed out once they have been played, but you can still choose them to be played next.</string>
+    <string name="playTip9">Red colored grids indicate an error playing one or more songs on that grid.</string>
 </resources>

@@ -43,6 +43,15 @@ public class MainActivity extends AppCompatActivity {
         initMisc();
     }
 
+    @Override
+    public void onBackPressed() {
+        // XXX not sure if this is the correct way to let PlayGrid continue when the back button
+        // is pressed but it seems to work fairly well
+        moveTaskToBack(true);
+
+        //super.onBackPressed();
+    }
+
     // get refs to activity views
     private void initViews() {
         playGridText = findViewById(R.id.playGrid);
