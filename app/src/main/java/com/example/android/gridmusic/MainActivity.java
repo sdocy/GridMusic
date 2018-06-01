@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
     // get refs to activity views
     private void initViews() {
-        playGridText = findViewById(R.id.playGrid);
-        createGridText = findViewById(R.id.createGrid);
-        editGridText = findViewById(R.id.editGrid);
+        playGridText = findViewById(R.id.mainMenu_PlayGrid);
+        createGridText = findViewById(R.id.mainMenu_CreateGrid);
+        editGridText = findViewById(R.id.mainMenu_EditGrid);
 
         Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/good-times.ttf");
         playGridText.setTypeface(custom_font);
@@ -92,6 +92,31 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // listen for `Play Grid` press
+        createGridText.setOnClickListener(new OnClickListener() {
+            // The code in this method will be executed when the numbers category is clicked on.
+            @Override
+            public void onClick(View view) {
+                // Create a new intent to open the activity
+                Intent createGridIntent = new Intent(MainActivity.this, CreateGridActivity.class);
+
+                myTools.vibrate(GeneralTools.touchVibDelay);
+
+                // highlight view text when pressed
+                myTools.flashText((TextView) view, R.color.highlightBlue, R.color.MainMenuTextColor, 75);
+
+                // I noticed when going back to the main menu that the playGrid activity
+                // continued to run (I saw the toast popup when it completed), so I
+                // looked up this code to resume the playGrid activity instead of
+                // starting a new one.
+                // https://stackoverflow.com/questions/12408719/resume-activity-in-android
+                createGridIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivityIfNeeded(createGridIntent, 0);
+
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            }
+        });
+
         // for things I haven't implemented
         OnClickListener notImplemented = new OnClickListener() {
             // The code in this method will be executed when the numbers category is clicked on.
@@ -102,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
         };
 
         // only `play / pause` currently work
-        createGridText.setOnClickListener(notImplemented);
         editGridText.setOnClickListener(notImplemented);
     }
 

@@ -10,7 +10,7 @@
     tools:context="com.example.android.gridmusic.PlayGridActivity">
 
     <ImageView
-        android:id="@+id/gridImage"
+        android:id="@+id/gridElement_GridImage"
         android:contentDescription="@string/musicGrid"
         android:layout_width="@dimen/gridElemDimen"
         android:layout_height="@dimen/gridElemDimen"

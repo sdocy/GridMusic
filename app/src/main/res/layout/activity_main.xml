@@ -9,7 +9,7 @@
     tools:context=".MainActivity">
 
     <ImageView
-        android:id="@+id/gridImage"
+        android:id="@+id/mainMenu_GridImage"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -18,17 +18,17 @@
 
 
     <TextView
-        android:id="@+id/playGrid"
+        android:id="@+id/mainMenu_PlayGrid"
         style="@style/mainButton"
         android:text="@string/playgrid"/>
 
     <TextView
-        android:id="@+id/createGrid"
+        android:id="@+id/mainMenu_CreateGrid"
         style="@style/mainButton"
         android:text="@string/creategrid"/>
 
     <TextView
-        android:id="@+id/editGrid"
+        android:id="@+id/mainMenu_EditGrid"
         style="@style/mainButton"
         android:text="@string/editgrid"/>
 

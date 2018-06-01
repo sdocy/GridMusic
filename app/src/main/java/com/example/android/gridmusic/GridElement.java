@@ -1,8 +1,8 @@
 package com.example.android.gridmusic;
 
 import android.util.Log;
-
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 
@@ -13,10 +13,11 @@ public class GridElement {
     boolean played = false;         // has this grid been played?
     int bgColor;                    // provides a border around the grid image
     int filterColor;                // filter color for different grid states
+    String albumArtPath = null;
 
     boolean hasSongError;
 
-    private ArrayList<Song> songList;       // list of songs
+    public List<Song> songList;       // list of songs
     private int numSongs = 0;               // how many songs in this grid
     private int numSongsNotPlayed = 0;      // how many songs in this grid have not been played yet
 
@@ -29,7 +30,7 @@ public class GridElement {
         songList = new ArrayList<>();
         songRNG = new Random();
 
-        if (imageR == -1) {
+        if (imageR < 0) {
             bgColor = R.color.borderEmptyGrid;
         } else {
             bgColor = R.color.borderNotPlayed;
@@ -38,10 +39,16 @@ public class GridElement {
     }
 
     // add a song to this grid
-    public void addSong(String song, String artist, String path) {
-        Song newSong = new Song(song, artist, path);
+    public void addSong(String song, String artist, String album, String path, int track) {
+        Song newSong = new Song(song, artist, album, path, track);
 
         songList.add(newSong);
+        numSongs++;
+        numSongsNotPlayed++;
+    }
+
+    public void addSong(Song s) {
+        songList.add(s);
         numSongs++;
         numSongsNotPlayed++;
     }
@@ -57,7 +64,7 @@ public class GridElement {
         int index;
         int count = -1;
 
-        // find arraylist index for the randomly chosen playable grid element
+        // find list index for the randomly chosen playable grid element
         for (index = 0; index < numSongs; index++) {
             // skip played songs
             if (songList.get(index).played)  {
@@ -109,11 +116,15 @@ public class GridElement {
 
     // see if grid is playable (non-blank, non-played)
     public boolean isPlayable() {
-        return ((!isBlank()) && (!played));
+        return ((!isEmpty()) && (!played));
     }
 
-    // see if this is a blank grid
-    public boolean isBlank() {
-        return (imageResourceId == -1);
+    // see if this is a blank or empty grid
+    public boolean isEmpty() {
+        return (imageResourceId < 0 );
+    }
+
+    public int numSongs() {
+        return songList.size();
     }
 }

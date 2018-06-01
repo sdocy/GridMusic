@@ -24,6 +24,27 @@
         <item name="android:layout_margin">@dimen/musicControlMargin</item>
     </style>
 
+    <style name="backArrow">
+        <item name="android:layout_width">@dimen/settingsIconDimen</item>
+        <item name="android:layout_height">@dimen/settingsIconDimen</item>
+        <item name="android:layout_marginRight">16dp</item>
+        <item name="android:background">#000000</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:src">@drawable/arrow</item>
+    </style>
+
+    <style name="settingsButton">
+        <item name="android:layout_width">@dimen/settingsIconDimen</item>
+        <item name="android:layout_height">@dimen/settingsIconDimen</item>
+        <item name="android:alpha">0.7</item>
+        <item name="android:background">#000000</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:layout_alignParentRight">true</item>
+        <item name="android:src">@drawable/settings</item>
+    </style>
+
     <style name="settingsOption">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

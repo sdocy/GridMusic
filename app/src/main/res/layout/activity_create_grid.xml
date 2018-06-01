@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/gridPadding"
+    android:background="@color/appBG"
+    tools:context="com.example.android.gridmusic.CreateGridActivity">
+
+    <!-- back arrow, artist info and settings icon -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_margin="4dp"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/createGrid_BackArrow"
+            android:contentDescription="@string/backArrow"
+            style="@style/backArrow"/>
+
+        <TextView
+            android:id="@+id/createGrid_InfoView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/myBlue"
+            android:textSize="20sp"
+            android:layout_margin="@dimen/gridMargin"
+            android:gravity="center"
+            tools:ignore="SelectableText" />
+
+        <ImageView
+            android:id="@+id/createGrid_SettingsButton"
+            android:contentDescription="@string/settings"
+            style="@style/settingsButton"/>
+
+    </RelativeLayout>
+
+    <!-- grid details -->
+    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/createGrid_DetailsList"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="@dimen/gridMargin"
+        android:layout_height="100dp"/>
+
+    <!-- settings layout -->
+    <LinearLayout
+        android:id="@+id/createGrid_SettingsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@drawable/layout_border"
+        android:padding="@dimen/gridPadding">
+
+        <TextView
+            android:id="@+id/createGrid_Settings_UndeleteLast"
+            style="@style/settingsOption"
+            android:text="@string/undeleteLast" />
+
+        <TextView
+            android:id="@+id/createGrid_Settings_UndeleteAll"
+            style="@style/settingsOption"
+            android:text="@string/undeleteAll" />
+
+        <TextView
+            android:id="@+id/createGrid_Settings_CombineArtist"
+            style="@style/settingsOption"
+            android:text="@string/combineByArtist" />
+
+        <TextView
+            android:id="@+id/createGrid_Settings_CombineAlbum"
+            style="@style/settingsOption"
+            android:text="@string/combineByAlbum" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:padding="@dimen/gridPadding">
+
+        <!-- gridList -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/gridPadding">
+
+            <TextView
+                android:id="@+id/createGrid_NumGrids"
+                android:textColor="@color/highlightBlue"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/gridMargin"
+                tools:ignore="SelectableText" />
+
+            <!-- grid list -->
+            <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/createGrid_GridList"
+                android:orientation="vertical"
+                android:layout_width="150dp"
+                android:layout_height="match_parent"/>
+        </LinearLayout>
+
+        <!-- the Grid -->
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <GridView
+                    android:id="@+id/createGrid_TheGrid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnWidth="@dimen/gridColumnWidth"
+                    android:numColumns="@string/maxGridColumns"
+                    android:verticalSpacing="@dimen/gridPadding"
+                    android:horizontalSpacing="@dimen/gridPadding"
+                    android:stretchMode="columnWidth"
+                    android:gravity="center"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+</LinearLayout>

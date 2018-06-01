@@ -142,14 +142,70 @@
 	</div>
 </div>
 
+<div class="text-left indentleft">
+	<p><br/><br/>Version 2.3 March 26, 2018<br/></p>
+	<ul>
+		<li>Tapping a green grid that has been selected to play next now de-selects it</li>
+		<li>You can start playback by tapping on any non-empty grid</li>
+		<li>I over-rode onBackPressed() to allow the PlayGrid activity to remain active when back is pressed</li>
+	</ul>
+</div>
+
 <div>
 	<div class="text-left indentleft">
-		<p><br/><br/>Version 2.3 March 26, 2018<br/></p>
+		<p><br/><br/>Version 3.0 March 28, 2018</p>
+		<p>Prototyped Create Grid activity</p>
 		<ul>
-			<li>Tapping a green grid that has been selected to play next now de-selects it</li>
-			<li>You can start playback by tapping on any non-empty grid</li>
-			<li>I over-rode onBackPressed() to allow the PlayGrid activity to remain active when back is pressed</li>
+			<li>Designed a very complex XML layout, which includes two ListViews and a GridView, for the Grid you are building,
+			    the list of grids to add, and a list of songs on the selected grid</li>
+			<li>Got a code gist working which retrieves meta-data for all music files on the device via MediaStore</li>
+			<li>Got another code gist working which extracts album art present on the device</li>
+			<li>Many of my songs were ripped from my CD collection and didn't have associated cover art, so I downloaded
+			    "Album Art Grabber", a simple app which finds album art for your music files.  It did not do a perfect job,
+				it got very confused with songs from "Greatest Hits" albums, giving them all the same cover art, but did find art
+				for just about everything.</li>
+			<li>I sort the song list by artist name, album name and track number and remove duplicates (created a custom Comparator for this)</li>
+			<li>Controls are pretty intuitive
+				<ul>
+					<li>tap on a grid in the to-place list, then an empty Grid spot to place it</li>
+					<li>long press a grid in the to-place list to delete it from the to-place list</li>
+					<li>long press a grid on the Grid to move it back to its original position in the to-place list</li>
+					<li>press any grid to see a list of songs on that grid</li>
+				</ul>
+			</li>
+			<li>There are options to undelete the last grid you deleted or all grids you deleted, placing them back in the to-place list</li>
+			<li>Provided options to combine all songs in the to-place list by the same artist or the same album into one grid</li>
+			<li>To-place list includes a counter of how many grids there are to place</li>
+			<li>Reworked the GridAdapter to handle images specified as either a bitmap path or a resource id</li>
 		</ul>
+		
+		<p>Misc other changes</p>
+		<ul>
+			<li>Show a toast message when unable to play a song on the Grid</li>
+			<li>Refactored XML id tags to make it easier to track them, there are getting to be a lot of them</li>
+			<li>Add album name and track number to Song class</li>
+			<li>Tweaked onBackPressed() over-ride</li>
+			<li>Replaced ArrayList declarations with List declarations</li>
+		</ul>
+		
+		<p>Create Grid TODO</p>
+		<ul>
+			<li>Create an AsyncTask or Loader for loading music</li>
+			<li>Add ProgressBar for loading music</li>
+			<li>Add grid counter for the Grid</li>
+			<li>We'll also need an interface for splitting a grid back into individual songs</li>
+			<li>Serialize and save the Grid to disk</li>
+			<li>Investigate better cover-art grabbing apps to recommend to users</li>
+			<li>It might be nice to add the ability to play music in the Create Grid activity, at least snippets, in case the user
+				is unsure what a particular song they have is</li>
+		</ul>
+	</div>
+	
+	<div class="text-right center">
+		<p><br/><br/></p>
+		<video width="360" height="640" controls preload >
+			<source src="create_grid.mp4">
+		</video>
 	</div>
 </div>
 
@@ -158,17 +214,16 @@
 		<p><br/><br/>TODO<br/></p>
 					
 		<ul>
+			<li>Investigate overhauling my ArrayAdapters so that they actually do all the managing of List state, rather than keeping  and
+			    directly accessing a reference to the lists in my Activity class OR investigate replacinmg the ListViews with RecyclerViews</li>
 			<li>In single play mode, if a user selects a grid, we skip that grid if all songs from it have already been played, perhaps we
 				should reset all songs to not played in this case and then choose a random one?</li>
 			<li>New feature - play all songs on a grid, in random order</li>
-			<li>Automatically start playing music when a grid is clicked on if music is not already playing, and player is not paused</li>
-			<li>Tap a green grid again to deselect it as the next grid to play</li>
-			<li>Investigate code for getting album art from the music file</li>
 			<li>See if I want to support skip-rewind</li>
-			<li>Build activity to create a Grid</li>
 			<li>See how to save and load Grids on device</li>
 			<li>Go through the guide I found for building Android Audio Players</li>
 			<li>Go back and retry supporting different grid sizes</li>
+			<li>See how the app falls over if no music files are found and setup ListView setEmptyView()</li>
 		</ul>
 	</div>
 </div>

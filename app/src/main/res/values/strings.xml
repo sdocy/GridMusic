@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Grid Music</string>
 
-    <string name="numColumns">20</string>
+    <string name="maxGridColumns">20</string>
     <string name="playing">playing&#8230;%1$s</string>
     <string name="paused">&lt;paused&gt;</string>
     <string name="done">DONE</string>
@@ -10,8 +10,9 @@
     <string name="creategrid">CREATE GRID</string>
     <string name="editgrid">EDIT GRID</string>
     <string name="musicGrid">music grid</string>
+    <string name="gridsTag" formatted="false">grids: %1$d</string>
 
-    <!-- music controls -->
+    <!-- playGrid music controls -->
     <string name="skip_rewind">skip_rewind</string>
     <string name="rewind">rewind</string>
     <string name="play">play</string>
@@ -19,7 +20,7 @@
     <string name="fastforward">fastforward</string>
     <string name="skip_fastforward">skip_fastforward</string>
 
-    <!-- settings strings -->
+    <!-- playGrid settings strings -->
     <string name="settings">settings</string>
     <string name="backArrow">back arrow</string>
     <string name="resetPlayed">Reset played grids.</string>
@@ -29,15 +30,48 @@
     <string name="editGrid">Edit Grid layout.</string>
     <string name="notSupported">This feature is not available in the trial version.</string>
 
-    <!-- daily tips -->
+    <!-- daily playGrid tips -->
     <string name="tip">Tip :</string>
-    <string name="playTip1">Tap the settings icon to see ways to customize your Grid.</string>
-    <string name="playTip2">You can choose to play one song per grid or all songs on each grid.</string>
-    <string name="playTip3">Tap on any grid to select it to be played next.</string>
-    <string name="playTip4">Under settings, you can reset played grids, allowing them to be visited again.</string>
-    <string name="playTip5">Long press any grid to toggle it between played / not-played.</string>
-    <string name="playTip6">Choose any grid to begin Grid playback on that grid.</string>
-    <string name="playTip7">Hit PLAY to start Grid playback on a random grid.</string>
-    <string name="playTip8">Grids are greyed out once they have been played, but you can still choose them to be played next.</string>
-    <string name="playTip9">Red colored grids indicate an error playing one or more songs on that grid.</string>
+    <integer name="numPlayTips">9</integer>
+    <string name="playTipName">playTip</string>
+    <string name="playTip0">Tap the settings icon to see ways to customize your Grid.</string>
+    <string name="playTip1">You can choose to play one song per grid or all songs on each grid.</string>
+    <string name="playTip2">Tap on any grid to select it to be played next.</string>
+    <string name="playTip3">Under settings, you can reset played grids, allowing them to be visited again.</string>
+    <string name="playTip4">Long press any grid to toggle it between played / not-played.</string>
+    <string name="playTip5">Choose any grid to begin Grid playback on that grid.</string>
+    <string name="playTip6">Hit PLAY to start Grid playback on a random grid.</string>
+    <string name="playTip7">Grids are greyed out once they have been played, but you can still choose them to be played next.</string>
+    <string name="playTip8">Red colored grids indicate an error playing one or more songs on that grid.</string>
+
+    <!-- daily createGrid tips -->
+    <integer name="numCreateTips">9</integer>
+    <string name="createTipName">createTip</string>
+    <string name="createTip1">Long press an item in the grid list to delete it.</string>
+    <string name="createTip2">Long press an item on the Grid to remove it from the Grid.</string>
+    <string name="createTip3">Tap the settings icon for additional features.</string>
+    <string name="createTip4">Under settings, there are options to undelete grids you have deleted.</string>
+    <string name="createTip5">Under settings, there are options to combine grids by artist or by album.</string>
+    <string name="createTip6">When adding a grid to the Grid, choose an occupied grid to add songs to it.</string>
+    <string name="createTip7">Grids in the grid list are sorted by artist, album and track number.</string>
+    <string name="createTip8">Duplicate songs (same artist, album and track number) are removed when music is imported.</string>
+    <string name="createTip9">Enhance Grid Music by using your favorite app to download album cover art</string>
+
+    <!-- create grid status msgs -->
+    <string name="loadingSongs">Loading songs&#8230;</string>
+    <string name="gridRecovered">Grid recovered</string>
+    <string name="allRecovered" formatted="false">Recovered %1$d grid(s)</string>
+    <string name="gridCombined" formatted="false">Combined %1$d grid(s)</string>
+    <string name="addedSongs" formatted="false">Added %1$d songs(s)</string>
+    <string name="numSongs" formatted="false">%1$d song(s)</string>
+    <string name="gridDeleted">Grid deleted</string>
+    <string name="gridRemoved">Grid removed</string>
+    <string name="gridAdded">Grid added</string>
+
+    <!-- createGrid settings strings -->
+    <string name="undeleteLast">Undelete Last</string>
+    <string name="undeleteAll">Undelete All</string>
+    <string name="noDelete">No songs have been deleted.</string>
+    <string name="combineByArtist">Combine grids by artist</string>
+    <string name="combineByAlbum">Combine grids by album</string>
 </resources>
