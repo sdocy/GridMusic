@@ -14,19 +14,24 @@ import android.widget.Toast;
 public class GeneralTools {
 
     private Context myContext;
-    private Vibrator vibrator;
     private Handler handler = new Handler();
 
     public final static int touchVibDelay = 50;
 
     GeneralTools(Context context) {
         myContext = context;
-        vibrator = (Vibrator) myContext.getSystemService(Context.VIBRATOR_SERVICE);
+
     }
 
     // Got this vibration code from a stackoverflow explanation of using vibration
     // https://stackoverflow.com/questions/13950338/how-to-make-an-android-device-vibrate
-    public void vibrate(int time) {
+    public static void vibrate(int time, Context context) {
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+
+        if (vibrator == null) {
+            return;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
@@ -54,6 +59,10 @@ public class GeneralTools {
         handler.postDelayed(turnOffHighlight(v, origColor), delay);
     }
 
+    public int convertDpToPixels(float dp, Context context) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
+    }
+
     // turn off textView highlight
     private Runnable turnOffHighlight(final TextView v, final int c) {
         return new Runnable() {
@@ -62,9 +71,5 @@ public class GeneralTools {
 
             }
         };
-    }
-
-    public int convertDpToPixels(float dp, Context context) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }
 }

@@ -8,7 +8,7 @@
     <string name="nullval">NULL</string>
     <string name="playgrid">PLAY GRID</string>
     <string name="creategrid">CREATE GRID</string>
-    <string name="editgrid">EDIT GRID</string>
+    <string name="downloadArt">DOWNLOAD COVER ART</string>
     <string name="musicGrid">music grid</string>
     <string name="gridsTag" formatted="false">grids: %1$d</string>
 
@@ -74,4 +74,14 @@
     <string name="noDelete">No songs have been deleted.</string>
     <string name="combineByArtist">Combine grids by artist</string>
     <string name="combineByAlbum">Combine grids by album</string>
+
+    <!-- Download Art buttons and info msgs -->
+    <string name="findAllArt">Find all\ncover art</string>
+    <string name="findUnknownArt">Find unknown\ncover art</string>
+    <string name="findCoverArt">Find cover art</string>
+    <string name="noCoverArt">No cover art found.</string>
+    <string name="noInternet">No internet connection.</string>
+    <string name="noMusic">No music found.</string>
+    <string name="coverArt">Cover Art</string>
+    <string name="coversDownloaded" formatted="false">%1$d cover(s) downloaded</string>
 </resources>

@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     // main menu navigation buttons
     private TextView playGridText;
     private TextView createGridText;
-    private TextView editGridText;
+    private TextView downloadArtText;
 
     // provides useful tools
     private GeneralTools myTools;
@@ -56,78 +56,47 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         playGridText = findViewById(R.id.mainMenu_PlayGrid);
         createGridText = findViewById(R.id.mainMenu_CreateGrid);
-        editGridText = findViewById(R.id.mainMenu_EditGrid);
+        downloadArtText = findViewById(R.id.mainMenu_DownloadArt);
 
         Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/good-times.ttf");
         playGridText.setTypeface(custom_font);
         createGridText.setTypeface(custom_font);
-        editGridText.setTypeface(custom_font);
+        downloadArtText.setTypeface(custom_font);
     }
 
     // setup listeners for main menu buttons
     private void initListeners() {
 
-        // listen for `Play Grid` press
-        playGridText.setOnClickListener(new OnClickListener() {
-            // The code in this method will be executed when the numbers category is clicked on.
+        // listener for main menu navigation buttons
+        OnClickListener mainMenuListener = new OnClickListener() {
             @Override
             public void onClick(View view) {
+                Intent buttonIntent = null;
+
                 // Create a new intent to open the activity
-                Intent playGridIntent = new Intent(MainActivity.this, PlayGridActivity.class);
+                switch (view.getId()) {
+                    case R.id.mainMenu_PlayGrid :       buttonIntent = new Intent(MainActivity.this, PlayGridActivity.class);
+                                                        break;
+                    case R.id.mainMenu_CreateGrid :     buttonIntent = new Intent(MainActivity.this, CreateGridActivity.class);
+                                                        break;
+                    case R.id.mainMenu_DownloadArt :    buttonIntent = new Intent(MainActivity.this, DownloadArtActivity.class);
+                }
 
-                myTools.vibrate(GeneralTools.touchVibDelay);
+                if (buttonIntent != null) {
+                    GeneralTools.vibrate(GeneralTools.touchVibDelay, MainActivity.this);
+                    myTools.flashText((TextView) view, R.color.highlightBlue, R.color.MainMenuTextColor, 75);
 
-                // highlight view text when pressed
-                myTools.flashText((TextView) view, R.color.highlightBlue, R.color.MainMenuTextColor, 75);
+                    buttonIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    startActivityIfNeeded(buttonIntent, 0);
 
-                // I noticed when going back to the main menu that the playGrid activity
-                // continued to run (I saw the toast popup when it completed), so I
-                // looked up this code to resume the playGrid activity instead of
-                // starting a new one.
-                // https://stackoverflow.com/questions/12408719/resume-activity-in-android
-                playGridIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivityIfNeeded(playGridIntent, 0);
-
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            }
-        });
-
-        // listen for `Play Grid` press
-        createGridText.setOnClickListener(new OnClickListener() {
-            // The code in this method will be executed when the numbers category is clicked on.
-            @Override
-            public void onClick(View view) {
-                // Create a new intent to open the activity
-                Intent createGridIntent = new Intent(MainActivity.this, CreateGridActivity.class);
-
-                myTools.vibrate(GeneralTools.touchVibDelay);
-
-                // highlight view text when pressed
-                myTools.flashText((TextView) view, R.color.highlightBlue, R.color.MainMenuTextColor, 75);
-
-                // I noticed when going back to the main menu that the playGrid activity
-                // continued to run (I saw the toast popup when it completed), so I
-                // looked up this code to resume the playGrid activity instead of
-                // starting a new one.
-                // https://stackoverflow.com/questions/12408719/resume-activity-in-android
-                createGridIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivityIfNeeded(createGridIntent, 0);
-
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            }
-        });
-
-        // for things I haven't implemented
-        OnClickListener notImplemented = new OnClickListener() {
-            // The code in this method will be executed when the numbers category is clicked on.
-            @Override
-            public void onClick(View view) {
-                myTools.notSupported();
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                }
             }
         };
 
-        // only `play / pause` currently work
-        editGridText.setOnClickListener(notImplemented);
+        playGridText.setOnClickListener(mainMenuListener);
+        createGridText.setOnClickListener(mainMenuListener);
+        downloadArtText.setOnClickListener(mainMenuListener);
     }
 
     // misc setup

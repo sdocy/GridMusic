@@ -2,7 +2,6 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-
     </style>
 
     <style name="mainButton">
@@ -51,5 +50,38 @@
         <item name="android:textColor">@color/myBlue</item>
         <item name="android:textSize">@dimen/settingsText</item>
         <item name="android:layout_margin">@dimen/gridMargin</item>
+    </style>
+
+    <style name="downloadArtInfoMsg">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/highlightBlue</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="downloadArtRetMsg">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/mainButtonText</item>
+        <item name="android:layout_margin">16dp</item>
+        <item name="android:textColor">@color/errorRed</item>
+        <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="coverArtView">
+        <item name="android:layout_width">@dimen/gridElemDimen</item>
+        <item name="android:layout_height">@dimen/gridElemDimen</item>
+        <item name="android:layout_margin">8dp</item>
+    </style>
+
+    <style name="coverArtCheckMarkView">
+        <item name="android:layout_width">@dimen/checkMarkDimen</item>
+        <item name="android:layout_height">@dimen/checkMarkDimen</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:src">@drawable/check</item>
     </style>
 </resources>

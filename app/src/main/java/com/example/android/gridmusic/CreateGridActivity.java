@@ -21,7 +21,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-public class CreateGridActivity extends AppCompatActivity implements View.OnClickListener{
+// TODO no need to implement OnClickListener, just create one that include a switch for use by mulitple UI objects
+public class CreateGridActivity extends AppCompatActivity implements View.OnClickListener {
 
     // for sorting the gridList
     //sort by artist name -> album name -> track number
@@ -130,15 +131,13 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     private void initEarlyViews() {
         // we need this view early to display loading status
         infoViewText = findViewById(R.id.createGrid_InfoView);
-
-
     }
 
     // import and display music
     private void initSongList() {
         infoViewText.setText(R.string.loadingSongs);
 
-        getMusicList();
+        gridList = getMusicList();
 
         // sort the gridList
         Collections.sort(gridList, new GridComparator());
@@ -293,7 +292,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         // Create a new intent to open the activity
         Intent mainMenuIntent = new Intent(CreateGridActivity.this, MainActivity.class);
 
-        myTools.vibrate(GeneralTools.touchVibDelay);
+        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
         startActivity(mainMenuIntent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -301,7 +300,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
     // user pressed settings icon, open the settings layout
     private void openSettings() {
-        myTools.vibrate(GeneralTools.touchVibDelay);
+        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
         if (showingSettings) {
             // settings are currently visible, hide them
@@ -316,7 +315,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
     // undelete the last grid that was deleted from the gridList
     private void undeleteLast() {
-        myTools.vibrate(GeneralTools.touchVibDelay);
+        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
         if (delGridList.isEmpty()) {
             myTools.showToast(this.getString(R.string.noDelete));
@@ -336,7 +335,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
     // undelete all grids that have been deleted from the gridList
     private void undeleteAll() {
-        myTools.vibrate(GeneralTools.touchVibDelay);
+        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
         if (delGridList.isEmpty()) {
             myTools.showToast(this.getString(R.string.noDelete));
@@ -356,7 +355,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     // currently : moves songs from grid1 to grid2 if the first song of both have the same artist name
     // requires a sorted list so that grids with the same artist are adjacent
     private void combineGrids(combineType combine) {
-        myTools.vibrate(GeneralTools.touchVibDelay);
+        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
         List<GridElement> toRemove = new ArrayList<>();
 
@@ -395,8 +394,9 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     }
 
     // this code retrieved from https://gist.github.com/novoda/374533
-    private void getMusicList() {
+    private ArrayList<GridElement> getMusicList() {
         Cursor cursor;
+        ArrayList<GridElement> grids = new ArrayList<>();
 
         //Retrieve a list of Music files currently listed in the Media store DB via URI.
 
@@ -412,6 +412,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
                 MediaStore.Audio.Media.TRACK
         };
 
+        // deprecated, use CursorLoader
         cursor = this.managedQuery(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection,
                 selection, null, null);
 
@@ -419,8 +420,8 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
             //Log.e("GET_SONGS", cursor.getString(0) + "||" + cursor.getString(1) + "||" + cursor.getString(2)
             //        + "||" +  cursor.getString(3) + "||" + cursor.getString(4) + "||" + cursor.getString(5));
 
-            gridList.add(new GridElement(R.drawable.emptygrid));
-            GridElement grid = gridList.get(gridList.size() - 1);
+            grids.add(new GridElement(R.drawable.unknown));
+            GridElement grid = grids.get(grids.size() - 1);
             // songName, artistName, albumName, filePath, trackNumber
             grid.addSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
@@ -438,16 +439,14 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
                     if (path != null) {
                         //Log.e("GET_ART", path);
                         grid.albumArtPath = path;
-                    } else {
-                        grid.imageResourceId = R.drawable.unknown;
                     }
                 }
 
                 cursorArt.close();
-            } else {
-                grid.imageResourceId = R.drawable.unknown;
             }
         }
+
+        return grids;
     }
 
     // Remove duplicate songs.
@@ -505,7 +504,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     // player pressed a grid on the gridList, highlight it and show details unless this
     // grid was already selected, then unhighlight it and clear details
     private void chooseListGrid(int position) {
-        myTools.vibrate(GeneralTools.touchVibDelay);
+        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
         if (currGridListIndex != -1) {
             gridList.get(currGridListIndex).filterColor = R.color.filterNotPlayed;
@@ -547,7 +546,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         GridElement clickedGrid = theGrid.get(position);
 
         if (!clickedGrid.isEmpty()) {
-            myTools.vibrate(GeneralTools.touchVibDelay);
+            GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
             if (currGridListIndex != -1) {
                 infoViewText.setText(getString(R.string.addedSongs, gridList.get(currGridListIndex).songList.size()));
@@ -594,7 +593,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
     // remove an item from the gridList and reset currGridListIndex
     private void removeGridListItem(int position) {
-        myTools.vibrate(GeneralTools.touchVibDelay);
+        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
         // anything that removes items from gridList must first reset currGridListIndex
         reset_currGridListIndex();
@@ -612,7 +611,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
             return;
         }
 
-        myTools.vibrate(GeneralTools.touchVibDelay);
+        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
 
         gridList.add(clickedGrid);
         // sort the gridList

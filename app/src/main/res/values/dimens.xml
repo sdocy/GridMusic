@@ -13,4 +13,6 @@
     <dimen name="settingsText">20dp</dimen>
 
     <dimen name="mainButtonText">30dp</dimen>
+
+    <dimen name="checkMarkDimen">24dp</dimen>
 </resources>

@@ -190,7 +190,7 @@
 		
 		<p>Create Grid TODO</p>
 		<ul>
-			<li>Create an AsyncTask or Loader for loading music</li>
+			<li>Create an AsyncTask or CursorLoader for loading music</li>
 			<li>Add ProgressBar for loading music</li>
 			<li>Add grid counter for the Grid</li>
 			<li>We'll also need an interface for splitting a grid back into individual songs</li>
@@ -209,21 +209,72 @@
 	</div>
 </div>
 
+
+<div>
+	<div class="text-left indentleft">
+		<p><br/><br/>Version 4.0 June 7, 2018</p>
+		<p>Prototyped Cover Art Downloader activity</p>
+		<ul>
+			<li>Searches your device for music files and associated cover art, and allows you to search the internet for additional
+				 cover art and download any art missing from your music library</li>
+			<li>Uses MediaStore Content Provider to discover music files and associated cover art on your device</li>
+			<li>Combines music from the same album to provide a list of unique albums present on the device</li>
+			<li>Uses public JSON APIs to query and download album cover art</li>
+			<li>Integrated google search as an alternative method for searching for missing cover art</li>
+		</ul>
+		
+		<p>Android development techniques I explored with this project</p>
+		<ul>
+			<li>My first use of ViewHolders with ListViews......love it...will definitely integrate them into GridMusic</li>
+			<li>Use of LoaderManagers to asynchronously perform network tasks</li>
+			<li>Retrieval and parsing of JSON data from public web APIs</li>
+			<li>Use of progressbars and empty list views to enhance ListView presentation</li>
+			<li>The use of RelativeLayouts and selective view visibility to efficiently switch between view content</li>
+			<li>Having multiple clickable view elements within a ListView element</li>
+			<li>Use of custom class comparators and Collection.sort() to organize ListView data</li>
+		</ul>
+		
+		<p>Cover Art Downloader TODO</p>
+		<ul>
+			<li>Make use of CursorLoader to asynchronously search device for music and art</li>
+			<li>Provide option to save downloaded art to device</li>
+		</ul>
+	</div>
+	
+	<div class="text-right center">
+		<p><br/><br/></p>
+		<video width="360" height="640" controls preload >
+			<source src="coverArtCollector.mp4">
+		</video>
+	</div>
+</div>
+
+
+
+
+
 <div>
 	<div class="text-left indentleft">
 		<p><br/><br/>TODO<br/></p>
 					
 		<ul>
+			<li>Add ViewHolders</li>
 			<li>Investigate overhauling my ArrayAdapters so that they actually do all the managing of List state, rather than keeping  and
-			    directly accessing a reference to the lists in my Activity class OR investigate replacinmg the ListViews with RecyclerViews</li>
+			    directly accessing a reference to the lists in my Activity class</li>
+			<li>Investigate replacing the ListViews with RecyclerViews</li>
+			<li>Move current options view to a drawer</li>
+			<li>Use settings icon for an overlay tutorial view</li>
 			<li>In single play mode, if a user selects a grid, we skip that grid if all songs from it have already been played, perhaps we
 				should reset all songs to not played in this case and then choose a random one?</li>
 			<li>New feature - play all songs on a grid, in random order</li>
-			<li>See if I want to support skip-rewind</li>
+			<li>Get rewind and fast-forward working</li>
 			<li>See how to save and load Grids on device</li>
-			<li>Go through the guide I found for building Android Audio Players</li>
+			<li>Go through the guides I found for building Android Audio Players</li>
 			<li>Go back and retry supporting different grid sizes</li>
 			<li>See how the app falls over if no music files are found and setup ListView setEmptyView()</li>
+			<li>Replace implementing onClickListener with just creating an onClickListener that includes a switch statement for use by
+				multiple UI objects</li>
+				<li>Investigate making the rest of GeneralTools static</li>
 		</ul>
 	</div>
 </div>

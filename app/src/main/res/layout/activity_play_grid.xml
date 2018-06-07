@@ -9,7 +9,7 @@
     android:orientation="vertical"
     android:background="@color/appBG"
     android:padding="@dimen/gridPadding"
-    tools:context="com.example.android.gridmusic.PlayGridActivity">
+    tools:context=".PlayGridActivity">
 
     <!-- back arrow, artist info and settings icon -->
     <RelativeLayout

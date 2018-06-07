@@ -28,8 +28,8 @@
         android:text="@string/creategrid"/>
 
     <TextView
-        android:id="@+id/mainMenu_EditGrid"
+        android:id="@+id/mainMenu_DownloadArt"
         style="@style/mainButton"
-        android:text="@string/editgrid"/>
+        android:text="@string/downloadArt"/>
 
 </LinearLayout>

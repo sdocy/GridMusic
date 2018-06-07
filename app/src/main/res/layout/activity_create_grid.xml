@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="@dimen/gridPadding"
     android:background="@color/appBG"
-    tools:context="com.example.android.gridmusic.CreateGridActivity">
+    tools:context=".CreateGridActivity">
 
     <!-- back arrow, artist info and settings icon -->
     <RelativeLayout
