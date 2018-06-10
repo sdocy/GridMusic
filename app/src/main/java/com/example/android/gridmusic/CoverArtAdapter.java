@@ -9,12 +9,11 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -23,12 +22,12 @@ import java.net.URLEncoder;
 import java.util.List;
 
 // view adapter for the list of albums
-public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderManager.LoaderCallbacks<DownloadedCoverArt> {
+public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHolder> implements LoaderManager.LoaderCallbacks<DownloadedCoverArt> {
 
     private Context myContext;
     private List<CoverArt> albums;
     private NetworkWorker netWork;            // worker class for network tasks
-    private LoaderManager lowdaMgr;         // async loader to perfrom network tasks
+    private LoaderManager lowdaMgr;         // async loader to perform network tasks
     private DownloadArtActivity myParent;     // reference to main activity
 
     private int numDownloaded = 0;          // number of covers downloaded
@@ -45,24 +44,36 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
     private boolean findingUnknown = false;
     private int findingAllIndex;            // index of the album we are findin art for when finding ALL
 
-    // viewholder for listview item
-    private static class ViewHolder {
-        private TextView artistName;
-        private TextView albumName;
-        private TextView findArt;
-        private TextView noArt;
-        private TextView noNet;
-        private ProgressBar progress;
-        private ImageView downloadArt;
-        private ImageView deviceArt;
-        private ImageView deviceArtCheck;
-        private ImageView downloadArtCheck;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView artistName;
+        TextView albumName;
+        TextView findArt;
+        TextView noArt;
+        TextView noNet;
+        ProgressBar progress;
+        ImageView downloadArt;
+        ImageView deviceArt;
+        ImageView deviceArtCheck;
+        ImageView downloadArtCheck;
+
+        ViewHolder(View listItem) {
+            super(listItem);
+
+            artistName = listItem.findViewById(R.id.cover_art_artist_name);
+            albumName = listItem.findViewById(R.id.cover_art_album_name);
+            findArt = listItem.findViewById(R.id.cover_art_find_art);
+            noArt = listItem.findViewById(R.id.cover_art_no_art);
+            noNet = listItem.findViewById(R.id.cover_art_no_internet);
+            progress = listItem.findViewById(R.id.cover_art_progress_bar);
+            downloadArt = listItem.findViewById(R.id.cover_art_download_art);
+            deviceArt = listItem.findViewById(R.id.cover_art_device_art);
+            deviceArtCheck = listItem.findViewById(R.id.cover_art_device_art_checkmark);
+            downloadArtCheck = listItem.findViewById(R.id.cover_art_download_art_checkmark);
+        }
     }
 
     CoverArtAdapter(@NonNull Context context, @NonNull List<CoverArt> objs, LoaderManager lowdaManager,
                     DownloadArtActivity p) {
-        super(context, 0, objs);
-
         myContext = context;
         albums = objs;
         myParent = p;
@@ -70,40 +81,20 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
         netWork = new NetworkWorker(myContext);
 
         lowdaMgr = lowdaManager;
-        }
+    }
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        ViewHolder holder;
-        View listItem = convertView;
-        if(listItem == null) {
-            // new view, init a new ViewHolder for it
-            listItem = LayoutInflater.from(myContext).inflate(R.layout.cover_art_item, parent, false);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.cover_art_item, parent, false);
 
-            holder = new ViewHolder();
-            holder.artistName = listItem.findViewById(R.id.cover_art_artist_name);
-            holder.albumName = listItem.findViewById(R.id.cover_art_album_name);
-            holder.findArt = listItem.findViewById(R.id.cover_art_find_art);
-            holder.noArt = listItem.findViewById(R.id.cover_art_no_art);
-            holder.noNet = listItem.findViewById(R.id.cover_art_no_internet);
-            holder.progress = listItem.findViewById(R.id.cover_art_progress_bar);
-            holder.deviceArt = listItem.findViewById(R.id.cover_art_device_art);
-            holder.downloadArt = listItem.findViewById(R.id.cover_art_download_art);
-            holder.deviceArtCheck = listItem.findViewById(R.id.cover_art_device_art_checkmark);
-            holder.downloadArtCheck = listItem.findViewById(R.id.cover_art_download_art_checkmark);
+        return new ViewHolder(itemView);
+    }
 
-            listItem.setTag(holder);
-        } else {
-            // recycled view, get existing ViewHolder
-            holder = (ViewHolder) listItem.getTag();
-        }
-
-        final CoverArt currentInfo = getItem(position);
-        if (currentInfo == null) {
-            Log.e("ERROR", "infoViewAdapter:getView() could not get currentInfo");
-            return listItem;
-        }
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        CoverArt currentInfo = albums.get(position);
 
         holder.artistName.setText(currentInfo.artistName);
         holder.albumName.setText(currentInfo.albumName);
@@ -137,12 +128,12 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
             public void onClick(View arg0) {
                 int pos = (Integer) arg0.getTag();
 
-                CoverArt currElem = getItem(pos);
+                CoverArt currElem = albums.get(pos);
                 if (currElem == null) {
                     return;
                 }
 
-                GeneralTools.vibrate(GeneralTools.touchVibDelay, myContext);
+                GeneralTools.vibrate(myContext, GeneralTools.touchVibDelay);
 
                 if (!currElem.useDownloadArt) {
                     // second click will open a google search for the artist / album
@@ -178,8 +169,11 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
             case nointernet :   turnOnNoNet(holder);
                 break;
         }
+    }
 
-        return listItem;
+    @Override
+    public int getItemCount() {
+        return albums.size();
     }
 
     // user has not tried to find art for this album yet, find art button is visible
@@ -201,7 +195,7 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
                     return;
                 }
 
-                GeneralTools.vibrate(GeneralTools.touchVibDelay, myContext);
+                GeneralTools.vibrate(myContext, GeneralTools.touchVibDelay);
 
                 int position = (Integer) arg0.getTag();
                 loadArt(position);
@@ -226,7 +220,7 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
         holder.progress.setVisibility(View.INVISIBLE);
         holder.downloadArt.setVisibility(View.VISIBLE);
 
-        CoverArt currElem = getItem(pos);
+        CoverArt currElem = albums.get(pos);
         if (currElem == null) {
             return;
         }
@@ -252,12 +246,12 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
             public void onClick(View arg0) {
                 int position = (Integer) arg0.getTag();
 
-                CoverArt currElem = getItem(position);
+                CoverArt currElem = albums.get(position);
                 if (currElem == null) {
                     return;
                 }
 
-                GeneralTools.vibrate(GeneralTools.touchVibDelay, myContext);
+                GeneralTools.vibrate(myContext, GeneralTools.touchVibDelay);
 
                 if (currElem.useDownloadArt) {
                     // user already chose download art, we open image URL on second click
@@ -292,11 +286,11 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
 
     // find cover art for the specified item
     private void loadArt(int position) {
-        if ((position < 0) || (position > getCount())) {
+        if ((position < 0) || (position > getItemCount())) {
             return;
         }
 
-        CoverArt currElem = getItem(position);
+        CoverArt currElem = albums.get(position);
         if (currElem == null) {
             return;
         }
@@ -370,7 +364,7 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
 
     // kick off an auto-find by finding the first album to find art for
     public void findAllArt(boolean unknownOnly) {
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, myContext);
+        GeneralTools.vibrate(myContext, GeneralTools.touchVibDelay);
 
         findingAll = true;
         findingUnknown = unknownOnly;
@@ -387,7 +381,7 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
     // find an album that we need to get cover art for, return the album's list position
     private int findAlbumToFind(int startingPos, boolean unknownOnly) {
         // look for an album without device art
-        for (findingAllIndex = startingPos; findingAllIndex < getCount(); findingAllIndex++) {
+        for (findingAllIndex = startingPos; findingAllIndex < getItemCount(); findingAllIndex++) {
             CoverArt alb = albums.get(findingAllIndex);
 
             // have we downloaded art for this album yet?
@@ -399,7 +393,7 @@ public class CoverArtAdapter extends ArrayAdapter<CoverArt> implements LoaderMan
             }
         }
 
-        if (findingAllIndex < getCount()) {
+        if (findingAllIndex < getItemCount()) {
             return findingAllIndex;
         } else {
             return -1;

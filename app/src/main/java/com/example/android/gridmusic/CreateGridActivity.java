@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +56,8 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     // list of grids to place
     private List<GridElement> gridList = new ArrayList<>();
     GridListAdapter gridListAdapter;
-    private ListView gridListView;
+    private RecyclerView gridListView;
+    private RecyclerView.LayoutManager gridListLayoutManager;
 
     // list of grids user deleted (in case they want to undelete)
     private List<GridElement> delGridList = new ArrayList<>();
@@ -92,16 +95,11 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     // user-chosen grids
     int currGridListIndex = -1;
 
-    private GeneralTools myTools;           // class with useful tools
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_grid);
         this.setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-        // misc initialization
-        initMisc();
 
         // init view refs that are used when creating the Grid and the gridList
         initEarlyViews();
@@ -165,7 +163,16 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         if (gridListView == null) {
             throw new AssertionError("CreateGridActivity.initViews() : null gridListView");
         }
-        gridListAdapter = new GridListAdapter(this, gridList);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        gridListView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        gridListLayoutManager = new LinearLayoutManager(this);
+        gridListView.setLayoutManager(gridListLayoutManager);
+
+        gridListAdapter = new GridListAdapter(this, gridList, this);
         gridListView.setAdapter(gridListAdapter);
 
         theGridView = findViewById(R.id.createGrid_TheGrid);
@@ -198,11 +205,6 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
     }
 
-    // misc setup
-    private void initMisc() {
-        myTools = new GeneralTools(this);
-    }
-
     // display a tip for creating a Grid
     private void initTips() {
         Random RNG = new Random();
@@ -211,7 +213,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         int tip = RNG.nextInt(getResources().getInteger(R.integer.numCreateTips));
         String tipName = getString(R.string.createTipName) + tip;
 
-        myTools.showToast(getString(R.string.tip) + " "
+        GeneralTools.showToast(this, getString(R.string.tip) + " "
                 + getString(getResources().getIdentifier(tipName, "string", getPackageName())));
     }
 
@@ -224,28 +226,6 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         undeleteAllText.setOnClickListener(this);
         combineByArtistText.setOnClickListener(this);
         combineByAlbumText.setOnClickListener(this);
-
-        // select a grid from the gridList
-        gridListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                chooseListGrid(position);
-            }
-        });
-
-        // long click a gridList grid to delete it
-        gridListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
-                GridElement grid = gridList.get(position);
-                // save this grid in case the user wants to undelete
-                delGridList.add(grid);
-
-                infoViewText.setText(R.string.gridDeleted);
-
-                removeGridListItem(position);
-
-                return true;
-            }
-        });
 
         theGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -283,8 +263,18 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
             case R.id.createGrid_Settings_CombineAlbum :    combineGrids(combineType.album);
                 break;
 
-            default :                                       myTools.notSupported();
+            default :                                       GeneralTools.notSupported(this);
         }
+    }
+
+    public void userDeletesGridListItem(int position) {
+        GridElement grid = gridList.get(position);
+        // save this grid in case the user wants to undelete
+        delGridList.add(grid);
+
+        infoViewText.setText(R.string.gridDeleted);
+
+        removeGridListItem(position);
     }
 
     // user pressed back arrow or back button, load MainActivity
@@ -292,7 +282,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         // Create a new intent to open the activity
         Intent mainMenuIntent = new Intent(CreateGridActivity.this, MainActivity.class);
 
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         startActivity(mainMenuIntent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -300,7 +290,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
     // user pressed settings icon, open the settings layout
     private void openSettings() {
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         if (showingSettings) {
             // settings are currently visible, hide them
@@ -315,10 +305,10 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
     // undelete the last grid that was deleted from the gridList
     private void undeleteLast() {
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         if (delGridList.isEmpty()) {
-            myTools.showToast(this.getString(R.string.noDelete));
+            GeneralTools.showToast(this, this.getString(R.string.noDelete));
             return;
         }
 
@@ -335,10 +325,10 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
     // undelete all grids that have been deleted from the gridList
     private void undeleteAll() {
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         if (delGridList.isEmpty()) {
-            myTools.showToast(this.getString(R.string.noDelete));
+            GeneralTools.showToast(this, this.getString(R.string.noDelete));
             return;
         }
 
@@ -355,7 +345,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     // currently : moves songs from grid1 to grid2 if the first song of both have the same artist name
     // requires a sorted list so that grids with the same artist are adjacent
     private void combineGrids(combineType combine) {
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         List<GridElement> toRemove = new ArrayList<>();
 
@@ -497,14 +487,15 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     // expand the GridView to hold the correct number of columns
     private void setGridTotalWidth() {
         ViewGroup.LayoutParams layoutParams = theGridView.getLayoutParams();
-        layoutParams.width = myTools.convertDpToPixels(GRID_CREATE_NUM_COLS * MainActivity.GRID_COLUMN_TOTALWIDTH, this);
+        layoutParams.width = GeneralTools.convertDpToPixels(this, GRID_CREATE_NUM_COLS * MainActivity.GRID_COLUMN_TOTALWIDTH);
         theGridView.setLayoutParams(layoutParams);
     }
 
+    // TODO XXX MOVE TO ADAPTER?
     // player pressed a grid on the gridList, highlight it and show details unless this
     // grid was already selected, then unhighlight it and clear details
-    private void chooseListGrid(int position) {
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+    public void chooseListGrid(int position) {
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         if (currGridListIndex != -1) {
             gridList.get(currGridListIndex).filterColor = R.color.filterNotPlayed;
@@ -546,7 +537,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         GridElement clickedGrid = theGrid.get(position);
 
         if (!clickedGrid.isEmpty()) {
-            GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+            GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
             if (currGridListIndex != -1) {
                 infoViewText.setText(getString(R.string.addedSongs, gridList.get(currGridListIndex).songList.size()));
@@ -593,7 +584,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
     // remove an item from the gridList and reset currGridListIndex
     private void removeGridListItem(int position) {
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         // anything that removes items from gridList must first reset currGridListIndex
         reset_currGridListIndex();
@@ -611,7 +602,7 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
             return;
         }
 
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         gridList.add(clickedGrid);
         // sort the gridList

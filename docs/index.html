@@ -255,7 +255,16 @@
 	</div>
 </div>
 
-
+<div>
+	<div class="text-left indentleft">
+		<p><br/><br/>Version 4.01 June 9, 2018</p>
+		<ul>
+			<li>Made all methods in GeneralTools static.</li>
+			<li>Implemented basic ViewHolders for all ArrayAdapters</li>
+			<li>Switched from ListViews to RecyclerViews for DownloadArt::albumList and CreateGrid::gridList</li>
+		</ul>
+	</div>
+</div>
 
 
 
@@ -264,10 +273,9 @@
 		<p><br/><br/>TODO<br/></p>
 					
 		<ul>
-			<li>Add ViewHolders</li>
 			<li>Investigate overhauling my ArrayAdapters so that they actually do all the managing of List state, rather than keeping  and
 			    directly accessing a reference to the lists in my Activity class</li>
-			<li>Investigate replacing the ListViews with RecyclerViews</li>
+			<li>Investigate replacing the GridViews with RecyclerViews</li>
 			<li>Move current options view to a drawer</li>
 			<li>Use settings icon for an overlay tutorial view</li>
 			<li>In single play mode, if a user selects a grid, we skip that grid if all songs from it have already been played, perhaps we
@@ -280,7 +288,6 @@
 			<li>See how the app falls over if no music files are found and setup ListView setEmptyView()</li>
 			<li>Replace implementing onClickListener with just creating an onClickListener that includes a switch statement for use by
 				multiple UI objects</li>
-				<li>Investigate making the rest of GeneralTools static</li>
 		</ul>
 	</div>
 </div>

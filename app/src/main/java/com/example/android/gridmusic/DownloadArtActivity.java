@@ -6,9 +6,10 @@ import android.database.Cursor;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 import java.util.ArrayList;
@@ -19,8 +20,10 @@ import java.util.List;
 public class DownloadArtActivity extends AppCompatActivity {
 
     List<CoverArt> albumList;
-    private ListView songListView;
+    private RecyclerView albumListView;
+    private RecyclerView.LayoutManager albumListLayoutManager;
     private TextView emptyListView;
+
     private CoverArtAdapter adapter = null;
 
     private ImageView backArrowButton;          // go back to main menu
@@ -69,10 +72,16 @@ public class DownloadArtActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        songListView = findViewById(R.id.download_art_song_list);
-
+        albumListView = findViewById(R.id.download_art_song_list);
         emptyListView = findViewById(R.id.download_art_empty_list);
-        songListView.setEmptyView(emptyListView);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        albumListView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        albumListLayoutManager = new LinearLayoutManager(this);
+        albumListView.setLayoutManager(albumListLayoutManager);
 
         findAllArtView = findViewById(R.id.download_art_find_all_art);
         findUnknownArtView = findViewById(R.id.download_art_find_unknown_art);
@@ -86,7 +95,7 @@ public class DownloadArtActivity extends AppCompatActivity {
         // Create a new intent to open the activity
         Intent mainMenuIntent = new Intent(DownloadArtActivity.this, MainActivity.class);
 
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         startActivity(mainMenuIntent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -104,9 +113,17 @@ public class DownloadArtActivity extends AppCompatActivity {
     }
 
     private void initAdapters() {
+        if (albumList.isEmpty()) {
+            emptyListView.setVisibility(View.VISIBLE);
+            albumListView.setVisibility(View.GONE);
+        }else {
+            emptyListView.setVisibility(View.GONE);
+            albumListView.setVisibility(View.VISIBLE);
+        }
+
         adapter = new CoverArtAdapter(this, albumList, getLoaderManager(), this);
 
-        songListView.setAdapter(adapter);
+        albumListView.setAdapter(adapter);
     }
 
     private void initListeners() {

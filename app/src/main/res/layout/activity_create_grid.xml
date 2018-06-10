@@ -100,11 +100,11 @@
                 tools:ignore="SelectableText" />
 
             <!-- grid list -->
-            <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+            <android.support.v7.widget.RecyclerView
                 android:id="@+id/createGrid_GridList"
-                android:orientation="vertical"
                 android:layout_width="150dp"
-                android:layout_height="match_parent"/>
+                android:layout_height="wrap_content"
+                android:scrollbars="vertical" />
         </LinearLayout>
 
         <!-- the Grid -->

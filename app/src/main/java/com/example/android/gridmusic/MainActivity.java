@@ -27,9 +27,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView createGridText;
     private TextView downloadArtText;
 
-    // provides useful tools
-    private GeneralTools myTools;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,8 +36,6 @@ public class MainActivity extends AppCompatActivity {
         initViews();
 
         initListeners();
-
-        initMisc();
     }
 
     @Override
@@ -83,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (buttonIntent != null) {
-                    GeneralTools.vibrate(GeneralTools.touchVibDelay, MainActivity.this);
-                    myTools.flashText((TextView) view, R.color.highlightBlue, R.color.MainMenuTextColor, 75);
+                    GeneralTools.vibrate(MainActivity.this, GeneralTools.touchVibDelay);
+                    GeneralTools.flashText(MainActivity.this, (TextView) view, R.color.highlightBlue, R.color.MainMenuTextColor, 75);
 
                     buttonIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivityIfNeeded(buttonIntent, 0);
@@ -97,10 +92,5 @@ public class MainActivity extends AppCompatActivity {
         playGridText.setOnClickListener(mainMenuListener);
         createGridText.setOnClickListener(mainMenuListener);
         downloadArtText.setOnClickListener(mainMenuListener);
-    }
-
-    // misc setup
-    private void initMisc() {
-        myTools = new GeneralTools(this);
     }
 }

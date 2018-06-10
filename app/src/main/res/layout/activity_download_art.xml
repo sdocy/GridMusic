@@ -44,12 +44,13 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <ListView
+
+        <android.support.v7.widget.RecyclerView
             android:id="@+id/download_art_song_list"
-            android:orientation="vertical"
+            android:scrollbars="vertical"
             android:layout_marginTop="16dp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/download_art_empty_list"

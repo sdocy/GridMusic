@@ -17,6 +17,15 @@ public class GridDetailsAdapter extends ArrayAdapter<Song> {
 
     private boolean showDetails = false;
 
+    // viewholder for listview item
+    private static class ViewHolder {
+        private TextView artistName;
+        private TextView albumName;
+        private TextView songName;
+        private TextView seperator1;
+        private TextView seperator2;
+    }
+
     GridDetailsAdapter(Context context, List<Song> list) {
         super (context, 0, list);
 
@@ -27,16 +36,23 @@ public class GridDetailsAdapter extends ArrayAdapter<Song> {
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+        ViewHolder holder;
         View listItem = convertView;
         if(listItem == null) {
             listItem = LayoutInflater.from(myContext).inflate(R.layout.grid_details_item, parent, false);
-        }
 
-        TextView artistName = listItem.findViewById(R.id.gridDetails_ArtistName);
-        TextView albumName = listItem.findViewById(R.id.gridDetails_AlbumName);
-        TextView songName = listItem.findViewById(R.id.gridDetails_SongName);
-        TextView seperator1 = listItem.findViewById(R.id.gridDetails_Sep1);
-        TextView seperator2 = listItem.findViewById(R.id.gridDetails_Sep2);
+            holder = new ViewHolder();
+            holder.artistName = listItem.findViewById(R.id.gridDetails_ArtistName);
+            holder.albumName = listItem.findViewById(R.id.gridDetails_AlbumName);
+            holder.songName = listItem.findViewById(R.id.gridDetails_SongName);
+            holder.seperator1 = listItem.findViewById(R.id.gridDetails_Sep1);
+            holder.seperator2 = listItem.findViewById(R.id.gridDetails_Sep2);
+
+            listItem.setTag(holder);
+        } else {
+            // recycled view, get existing ViewHolder
+            holder = (ViewHolder) listItem.getTag();
+        }
 
         if (showDetails) {
             Song currentElem = songList.get(position);
@@ -44,17 +60,17 @@ public class GridDetailsAdapter extends ArrayAdapter<Song> {
                 throw new AssertionError("SongListAdapter.getView() : null currentElem");
             }
 
-            artistName.setText(currentElem.artistName);
-            albumName.setText(currentElem.albumName);
-            songName.setText(currentElem.songName);
-            seperator1.setText(" | ");
-            seperator2.setText(" | ");
+            holder.artistName.setText(currentElem.artistName);
+            holder.albumName.setText(currentElem.albumName);
+            holder.songName.setText(currentElem.songName);
+            holder.seperator1.setText(" | ");
+            holder.seperator2.setText(" | ");
         } else {
-            artistName.setText("");
-            albumName.setText("");
-            songName.setText("");
-            seperator1.setText("");
-            seperator2.setText("");
+            holder.artistName.setText("");
+            holder.albumName.setText("");
+            holder.songName.setText("");
+            holder.seperator1.setText("");
+            holder.seperator2.setText("");
         }
 
         return listItem;

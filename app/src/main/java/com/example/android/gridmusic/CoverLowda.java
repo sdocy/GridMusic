@@ -3,7 +3,7 @@ package com.example.android.gridmusic;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 
-
+// Sasake?
 public class CoverLowda extends AsyncTaskLoader<DownloadedCoverArt> {
 
     private String musicBrainzFirstURL;

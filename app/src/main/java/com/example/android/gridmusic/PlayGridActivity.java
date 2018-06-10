@@ -80,7 +80,6 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
     private Random RNG = new Random();
-    private GeneralTools myTools;           // class with useful tools
 
     // the Grid
     private List<GridElement> theGrid = new ArrayList<>();
@@ -435,8 +434,6 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
     // misc setup
     private void initMisc() {
-        myTools = new GeneralTools(this);
-
         audioMgr = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
     }
 
@@ -446,7 +443,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         int tip = RNG.nextInt(getResources().getInteger(R.integer.numPlayTips));
         String tipName = getString(R.string.playTipName) + tip;
 
-        myTools.showToast(getString(R.string.tip) + " "
+        GeneralTools.showToast(this, getString(R.string.tip) + " "
                 + getString(getResources().getIdentifier(tipName, "string", getPackageName())));
     }
 
@@ -562,7 +559,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             case R.id.playGrid_Settings_SongsPerGrid :      changeSongsPerGrid();
                                                             break;
 
-            default :                                       myTools.notSupported();
+            default :                                       GeneralTools.notSupported(this);
         }
     }
 
@@ -574,7 +571,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     private void playPause(boolean fromUser) {
         if (fromUser) {
             // this call is from a user click, provide tactile feedback
-            GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+            GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
 
 
@@ -625,7 +622,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         if (mediaPlayer != null) {
             if (fromUser) {
                 // this call is from a user click, provide tactile feedback
-                GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+                GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
                 // flashy flash the `stop` button when you press it
                 controlStop.setColorFilter(Color.WHITE);
@@ -655,7 +652,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // stop song and call completion listener to trigger picking of next song
     private void skipFastForward() {
         if (mediaPlayer != null) {
-            GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+            GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
             // we might be paused, transition back to playing
             playingMusic = true;
@@ -680,7 +677,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             return;
         }
 
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         if (nextGridIndex != -1) {
             GridElement currNextGrid = theGrid.get(nextGridIndex);
@@ -714,7 +711,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             return false;
         }
 
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         if (g.played) {
             numNotPlayed++;
@@ -733,7 +730,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         // Create a new intent to open the activity
         Intent mainMenuIntent = new Intent(PlayGridActivity.this, MainActivity.class);
 
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         startActivity(mainMenuIntent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -741,7 +738,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
     // user pressed settings icon, open the settings layout
     private void openSettings() {
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         if (showingSettings) {
             // settings are currently visible, hide them
@@ -759,9 +756,9 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // If we are playing music, then the currently playing grid is not reset.
     private void resetGrids(boolean fromUser) {
         if (fromUser) {
-            myTools.flashText(resetPlayedGridsText, R.color.highlightBlue, R.color.myBlue, 75);
-            GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
-            myTools.showToast(PlayGridActivity.this.getString(R.string.resettingPlayed));
+            GeneralTools.flashText(this, resetPlayedGridsText, R.color.highlightBlue, R.color.myBlue, 75);
+            GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+            GeneralTools.showToast(this, PlayGridActivity.this.getString(R.string.resettingPlayed));
         }
 
         // find list index for the randomly chosen playable grid element
@@ -798,8 +795,8 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
     // user pressed setting to change the songs played per grid
     private void changeSongsPerGrid() {
-        myTools.flashText(songsPerGridText, R.color.highlightBlue, R.color.myBlue, 75);
-        GeneralTools.vibrate(GeneralTools.touchVibDelay, this);
+        GeneralTools.flashText(this, songsPerGridText, R.color.highlightBlue, R.color.myBlue, 75);
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
         if (playEntireGrid) {
             songsPerGridText.setText(R.string.oneSong);
@@ -820,7 +817,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // expand the GridView to hold the correct number of columns
     private void setGridTotalWidth() {
         ViewGroup.LayoutParams layoutParams = theGridView.getLayoutParams();
-        layoutParams.width = myTools.convertDpToPixels(numGridCols * MainActivity.GRID_COLUMN_TOTALWIDTH, this);
+        layoutParams.width = GeneralTools.convertDpToPixels(this, numGridCols * MainActivity.GRID_COLUMN_TOTALWIDTH);
         theGridView.setLayoutParams(layoutParams);
     }
 
@@ -843,7 +840,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             // release audio focus
             audioMgr.abandonAudioFocus(audioFocusListener);
 
-            GeneralTools.vibrate(500, this);
+            GeneralTools.vibrate(this, 500);
 
             return;
         }
@@ -1012,7 +1009,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
             if (mediaPlayer == null) {
                 Log.e("ERROR", "COULD NOT PLAY " + currentSong.filePath);
-                myTools.showToast("COULD NOT PLAY " + currentSong.songName);
+                GeneralTools.showToast(this, "COULD NOT PLAY " + currentSong.songName);
 
                 currentSong.errored = true;
                 grid.hasSongError = true;
@@ -1057,7 +1054,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
             if (mediaPlayer == null) {
                 Log.e("ERROR", "COULD NOT PLAY " + currentSong.filePath);
-                myTools.showToast("COULD NOT PLAY " + currentSong.songName);
+                GeneralTools.showToast(this, "COULD NOT PLAY " + currentSong.songName);
 
                 currentSong.errored = true;
                 grid.hasSongError = true;
