@@ -6,7 +6,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.util.TypedValue;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,10 +53,6 @@ public class GeneralTools {
 
         v.setTextColor(context.getResources().getColor(highlightColor));
         handler.postDelayed(turnOffHighlight(context, v, origColor), delay);
-    }
-
-    public static int convertDpToPixels(Context context, float dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }
 
     // turn off textView highlight

@@ -47,15 +47,15 @@
     <!-- daily createGrid tips -->
     <integer name="numCreateTips">9</integer>
     <string name="createTipName">createTip</string>
-    <string name="createTip1">Long press an item in the grid list to delete it.</string>
-    <string name="createTip2">Long press an item on the Grid to remove it from the Grid.</string>
-    <string name="createTip3">Tap the settings icon for additional features.</string>
-    <string name="createTip4">Under settings, there are options to undelete grids you have deleted.</string>
-    <string name="createTip5">Under settings, there are options to combine grids by artist or by album.</string>
-    <string name="createTip6">When adding a grid to the Grid, choose an occupied grid to add songs to it.</string>
-    <string name="createTip7">Grids in the grid list are sorted by artist, album and track number.</string>
-    <string name="createTip8">Duplicate songs (same artist, album and track number) are removed when music is imported.</string>
-    <string name="createTip9">Enhance Grid Music by using your favorite app to download album cover art</string>
+    <string name="createTip0">Long press an item in the grid list to delete it.</string>
+    <string name="createTip1">Long press an item on the Grid to remove it from the Grid.</string>
+    <string name="createTip2">Tap the settings icon for additional features.</string>
+    <string name="createTip3">Under settings, there are options to undelete grids you have deleted.</string>
+    <string name="createTip4">Under settings, there are options to combine grids by artist or by album.</string>
+    <string name="createTip5">When adding a grid to the Grid, choose an occupied grid to add songs to it.</string>
+    <string name="createTip6">Grids in the grid list are sorted by artist, album and track number.</string>
+    <string name="createTip7">Duplicate songs (same artist, album and track number) are removed when music is imported.</string>
+    <string name="createTip8">Enhance Grid Music by using your favorite app to download album cover art</string>
 
     <!-- create grid status msgs -->
     <string name="loadingSongs">Loading songs&#8230;</string>

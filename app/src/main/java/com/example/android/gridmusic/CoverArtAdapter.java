@@ -28,7 +28,6 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
     private List<CoverArt> albums;
     private NetworkWorker netWork;            // worker class for network tasks
     private LoaderManager lowdaMgr;         // async loader to perform network tasks
-    private DownloadArtActivity myParent;     // reference to main activity
 
     private int numDownloaded = 0;          // number of covers downloaded
 
@@ -72,11 +71,9 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
         }
     }
 
-    CoverArtAdapter(@NonNull Context context, @NonNull List<CoverArt> objs, LoaderManager lowdaManager,
-                    DownloadArtActivity p) {
+    CoverArtAdapter(@NonNull Context context, @NonNull List<CoverArt> objs, LoaderManager lowdaManager) {
         myContext = context;
         albums = objs;
-        myParent = p;
 
         netWork = new NetworkWorker(myContext);
 
@@ -93,7 +90,7 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         CoverArt currentInfo = albums.get(position);
 
         holder.artistName.setText(currentInfo.artistName);
@@ -101,9 +98,9 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
 
         // show number downloaded iff we have downloaded some art
         if (numDownloaded > 0) {
-            myParent.numDownloadedView.setText(myContext.getString(R.string.coversDownloaded, numDownloaded));
+            ((DownloadArtActivity) myContext).numDownloadedView.setText(myContext.getString(R.string.coversDownloaded, numDownloaded));
         } else {
-            myParent.numDownloadedView.setText("");
+            ((DownloadArtActivity) myContext).numDownloadedView.setText("");
         }
 
         // show device art or "unknown" if there is no device art
@@ -122,13 +119,10 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
 
         // got this trick for having clickable elements inside a listview from
         // https://stackoverflow.com/questions/20541821/get-listview-item-position-on-button-click
-        holder.deviceArt.setTag(position);
         holder.deviceArt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                int pos = (Integer) arg0.getTag();
-
-                CoverArt currElem = albums.get(pos);
+                CoverArt currElem = albums.get(holder.getAdapterPosition());
                 if (currElem == null) {
                     return;
                 }
@@ -158,7 +152,7 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
 
         // show / hide certain views based on item state
         switch (currentInfo.artState) {
-            case find :         turnOnFind(position, holder);
+            case find :         turnOnFind(holder);
                 break;
             case loading :      turnOnLoading(holder);
                 break;
@@ -177,7 +171,7 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
     }
 
     // user has not tried to find art for this album yet, find art button is visible
-    private void turnOnFind(int pos, ViewHolder holder) {
+    private void turnOnFind(final ViewHolder holder) {
         holder.findArt.setVisibility(View.VISIBLE);
         holder.noArt.setVisibility(View.INVISIBLE);
         holder.noNet.setVisibility(View.INVISIBLE);
@@ -186,7 +180,6 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
 
         // got this trick for having clickable elements inside a listview from
         // https://stackoverflow.com/questions/20541821/get-listview-item-position-on-button-click
-        holder.findArt.setTag(pos);
         holder.findArt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -197,8 +190,7 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
 
                 GeneralTools.vibrate(myContext, GeneralTools.touchVibDelay);
 
-                int position = (Integer) arg0.getTag();
-                loadArt(position);
+                loadArt(holder.getAdapterPosition());
             }
         });
     }
@@ -213,7 +205,7 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
     }
 
     // we have successfully downloaded cover art for this item, downloaded art image is visible
-    private void turnOnLoaded(int pos, ViewHolder holder) {
+    private void turnOnLoaded(int pos, final ViewHolder holder) {
         holder.findArt.setVisibility(View.INVISIBLE);
         holder.noArt.setVisibility(View.INVISIBLE);
         holder.noNet.setVisibility(View.INVISIBLE);
@@ -240,13 +232,11 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
 
         // got this trick for having clickable elements inside a listview from
         // https://stackoverflow.com/questions/20541821/get-listview-item-position-on-button-click
-        holder.downloadArt.setTag(pos);
         holder.downloadArt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                int position = (Integer) arg0.getTag();
 
-                CoverArt currElem = albums.get(position);
+                CoverArt currElem = albums.get(holder.getAdapterPosition());
                 if (currElem == null) {
                     return;
                 }
@@ -351,7 +341,7 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
             } else {
                 // we are done
                 findingAll = false;
-                myParent.enableAutoFind();
+                ((DownloadArtActivity) myContext).enableAutoFind();
             }
         }
     }
@@ -374,7 +364,6 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
             loadArt(toFind);
         } else {
             findingAll = false;
-            myParent.enableAutoFind();
         }
     }
 

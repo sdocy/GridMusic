@@ -10,12 +10,11 @@ import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ImageView;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +24,8 @@ import android.widget.TextView;
 import android.os.Handler;
 
 
-
 // contains all code for playing a Grid
-// TODO no need to implement OnClickListener, just create one that include a switch for use by mulitple UI objects
-public class PlayGridActivity extends AppCompatActivity implements OnClickListener {
+public class PlayGridActivity extends AppCompatActivity implements TheGridClicks {
 
     private final int CURR_STATE_COLOR = -1;
 
@@ -48,7 +45,8 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     private AudioManager.OnAudioFocusChangeListener audioFocusListener = null;
 
     private GridAdapter gridAdapter;        // view adapter for the Grid
-    private GridView theGridView;
+    private RecyclerView theGridView;
+
     private int prevGridIndex = -1;         // grid we played last time
     private int currGridIndex = -1;         // grid we are playing now, or have just chosen to play
     private int nextGridIndex = -1;         // grid to play next
@@ -84,24 +82,20 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     // the Grid
     private List<GridElement> theGrid = new ArrayList<>();
 
-    private GridElement blankGrid;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_grid);
         this.setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        // misc initialization
-        initMisc();
-
-        // get list of grid elements
-        initGridArray();
-
-        // getr view refs
         initViews();
 
-        // setup OnClick listeners
+        initMisc();
+
+        initGridArray();
+
+        initAdapters();
+
         initListeners();
 
         initTips();
@@ -123,7 +117,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     private void initGridArray() {
         GridElement grid;
 
-        blankGrid = new GridElement(-1);
+        GridElement blankGrid = new GridElement(-1);
 
         // row 0
         theGrid.add(blankGrid);
@@ -406,15 +400,7 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
     // get view references and setup GridView adapter
     private void initViews() {
-        gridAdapter = new GridAdapter(this, theGrid);
         theGridView = findViewById(R.id.playGrid_TheGrid);
-        if (theGridView == null) {
-            throw new AssertionError("PlayGridActivity.initView() : null gridView");
-        }
-        theGridView.setAdapter(gridAdapter);
-
-        setGridTotalWidth();
-        theGridView.setNumColumns(numGridCols);
 
         // views for music control and display
         controlPlay = findViewById(R.id.playGrid_Control_Play);
@@ -437,46 +423,63 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         audioMgr = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
     }
 
-    // display a tip for playing a Grid
-    private void initTips() {
-        // create resource name for a tip
-        int tip = RNG.nextInt(getResources().getInteger(R.integer.numPlayTips));
-        String tipName = getString(R.string.playTipName) + tip;
+    // set up view adapters and layout managers
+    private void initAdapters() {
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        theGridView.setHasFixedSize(true);
 
-        GeneralTools.showToast(this, getString(R.string.tip) + " "
-                + getString(getResources().getIdentifier(tipName, "string", getPackageName())));
+        // use a grid layout manager
+        RecyclerView.LayoutManager theGridLayoutManager = new GridLayoutManager(this, numGridCols);
+        theGridView.setLayoutManager(theGridLayoutManager);
+
+        gridAdapter = new GridAdapter(this, theGrid);
+        theGridView.setAdapter(gridAdapter);
     }
 
     // init OnClickListeners
     private void initListeners() {
+        View.OnClickListener UIClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()) {
+                    case R.id.playGrid_Control_Play :               playPause(true);
+                        break;
 
-        controlPlay.setOnClickListener(this);
-        backArrowButton.setOnClickListener(this);
-        settingsButton.setOnClickListener(this);
-        resetPlayedGridsText.setOnClickListener(this);
-        songsPerGridText.setOnClickListener(this);
+                    case R.id.playGrid_Control_Stop :               stopMusic(true);
+                        break;
+
+                    case R.id.playGrid_Control_SkipFastforward :    skipFastForward();
+                        break;
+
+                    case R.id.playGrid_BackArrow :                  goBackToMainMenu();
+                        break;
+
+                    case R.id.playGrid_SettingsButton :             openSettings();
+                        break;
+
+                    case R.id.playGrid_Settings_ResetPlayedGrids :  resetGrids(true);
+                        break;
+
+                    case R.id.playGrid_Settings_SongsPerGrid :      changeSongsPerGrid();
+                        break;
+
+                    default :                                       GeneralTools.notSupported(PlayGridActivity.this);
+                }
+            }
+        };
+
+        controlPlay.setOnClickListener(UIClickListener);
+        controlStop.setOnClickListener(UIClickListener);
+        controlSkipFastForward.setOnClickListener(UIClickListener);
+        backArrowButton.setOnClickListener(UIClickListener);
+        settingsButton.setOnClickListener(UIClickListener);
+        resetPlayedGridsText.setOnClickListener(UIClickListener);
+        songsPerGridText.setOnClickListener(UIClickListener);
 
         // features currently not implemented
-        controlSkipRewind.setOnClickListener(this);
-        controlStop.setOnClickListener(this);
-        controlSkipFastForward.setOnClickListener(this);
-        editGridText.setOnClickListener(this);
-
-
-        // We can implement these like we did for OnClick() if we do more with item clicks
-        // listen for for grid element press
-        theGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                userChoseNextGrid(position);
-            }
-        });
-
-        // listen for for grid element long press
-        theGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
-                return userToggledPlayState(position);
-            }
-        });
+        controlSkipRewind.setOnClickListener(UIClickListener);
+        editGridText.setOnClickListener(UIClickListener);
 
         songDoneListener = (new MediaPlayer.OnCompletionListener() {
             @Override
@@ -536,31 +539,24 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
         };
     }
 
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.playGrid_Control_Play :               playPause(true);
-                                                            break;
+    // display a tip for playing a Grid
+    private void initTips() {
+        // create resource name for a tip
+        int tip = RNG.nextInt(getResources().getInteger(R.integer.numPlayTips));
+        String tipName = getString(R.string.playTipName) + tip;
 
-            case R.id.playGrid_Control_Stop :               stopMusic(true);
-                                                            break;
+        GeneralTools.showToast(this, getString(R.string.tip) + " "
+                + getString(getResources().getIdentifier(tipName, "string", getPackageName())));
+    }
 
-            case R.id.playGrid_Control_SkipFastforward :    skipFastForward();
-                                                            break;
+    // method for GridAdapter to call for onClick()
+    public void theGridOnClick(int position) {
+        userChoseNextGrid(position);
+    }
 
-            case R.id.playGrid_BackArrow :                  goBackToMainMenu();
-                                                            break;
-
-            case R.id.playGrid_SettingsButton :             openSettings();
-                                                            break;
-
-            case R.id.playGrid_Settings_ResetPlayedGrids :  resetGrids(true);
-                                                            break;
-
-            case R.id.playGrid_Settings_SongsPerGrid :      changeSongsPerGrid();
-                                                            break;
-
-            default :                                       GeneralTools.notSupported(this);
-        }
+    // method for GridAdapter to call for onLongClick()
+    public void theGridOnLongClick(int position) {
+        userToggledPlayState(position);
     }
 
     // ***************************
@@ -703,12 +699,12 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
     }
 
     // user long-pressed a grid, switch its play state
-    private boolean userToggledPlayState(int position) {
+    private void userToggledPlayState(int position) {
         GridElement g = theGrid.get(position);
 
         // ignore presses on blank grids and the currently playing grid
         if (g.isEmpty() || (position == currGridIndex)) {
-            return false;
+            return;
         }
 
         GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
@@ -721,8 +717,6 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
 
         g.played = !g.played;
         setGridColor(g, CURR_STATE_COLOR, true);
-
-        return true;
     }
 
     // user pressed back arrow or back button, load MainActivity
@@ -812,13 +806,6 @@ public class PlayGridActivity extends AppCompatActivity implements OnClickListen
             playEntireGridIndex = theGrid.get(currGridIndex).getSongIndex(currentSong);
         }
 
-    }
-
-    // expand the GridView to hold the correct number of columns
-    private void setGridTotalWidth() {
-        ViewGroup.LayoutParams layoutParams = theGridView.getLayoutParams();
-        layoutParams.width = GeneralTools.convertDpToPixels(this, numGridCols * MainActivity.GRID_COLUMN_TOTALWIDTH);
-        theGridView.setLayoutParams(layoutParams);
     }
 
     // pick a grid to roam from

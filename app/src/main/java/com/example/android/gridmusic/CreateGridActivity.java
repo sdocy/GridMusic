@@ -6,13 +6,12 @@ import android.database.Cursor;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -23,8 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-// TODO no need to implement OnClickListener, just create one that include a switch for use by mulitple UI objects
-public class CreateGridActivity extends AppCompatActivity implements View.OnClickListener {
+public class CreateGridActivity extends AppCompatActivity implements TheGridClicks {
 
     // for sorting the gridList
     //sort by artist name -> album name -> track number
@@ -57,7 +55,6 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     private List<GridElement> gridList = new ArrayList<>();
     GridListAdapter gridListAdapter;
     private RecyclerView gridListView;
-    private RecyclerView.LayoutManager gridListLayoutManager;
 
     // list of grids user deleted (in case they want to undelete)
     private List<GridElement> delGridList = new ArrayList<>();
@@ -65,7 +62,11 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
     // the Grid
     private List<GridElement> theGrid = new ArrayList<>();
     private GridAdapter gridAdapter;        // view adapter for the Grid
-    private GridView theGridView;
+    private RecyclerView theGridView;
+    private TextView emptyListView;
+
+    // view for list of songs on a grid
+    ListView gridDetailsView;
 
     // reference to an empty griod object
     private GridElement emptyGrid;
@@ -101,19 +102,26 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         setContentView(R.layout.activity_create_grid);
         this.setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        // init view refs that are used when creating the Grid and the gridList
-        initEarlyViews();
-
-        initSongList();
-
-        // get list of grid elements
-        initGridArray();
-
         initViews();
 
-        initListeners();
+        initGridList();
 
-        initTips();
+        if (gridList.isEmpty()) {
+            // display empty list view
+            emptyListView.setVisibility(View.VISIBLE);
+            theGridView.setVisibility(View.GONE);
+
+            backArrowButton.setVisibility(View.INVISIBLE);
+            settingsButton.setVisibility(View.INVISIBLE);
+        } else {
+            initGridArray();
+
+            initAdapters();
+
+            initListeners();
+
+            initTips();
+        }
     }
 
     @Override
@@ -125,14 +133,33 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         //super.onBackPressed();
     }
 
-    // views we need refs to prior to importing music
-    private void initEarlyViews() {
-        // we need this view early to display loading status
+    // init view refs and adapters
+    private void initViews() {
         infoViewText = findViewById(R.id.createGrid_InfoView);
+
+        // list of grids to add
+        gridListView = findViewById(R.id.createGrid_GridList);
+
+        // the Grid
+        theGridView = findViewById(R.id.createGrid_TheGrid);
+        emptyListView = findViewById(R.id.createGrid_empty_list);
+
+        // grid details - songs in a grid
+        gridDetailsView = findViewById(R.id.createGrid_DetailsList);
+
+        backArrowButton = findViewById(R.id.createGrid_BackArrow);
+        settingsButton = findViewById(R.id.createGrid_SettingsButton);
+        settingsLayout = findViewById(R.id.createGrid_SettingsLayout);
+        undeleteLastText = findViewById(R.id.createGrid_Settings_UndeleteLast);
+        undeleteAllText = findViewById(R.id.createGrid_Settings_UndeleteAll);
+        combineByArtistText = findViewById(R.id.createGrid_Settings_CombineArtist);
+        combineByAlbumText = findViewById(R.id.createGrid_Settings_CombineAlbum);
+
+        numGridsView = findViewById(R.id.createGrid_NumGrids);
     }
 
     // import and display music
-    private void initSongList() {
+    private void initGridList() {
         infoViewText.setText(R.string.loadingSongs);
 
         gridList = getMusicList();
@@ -144,6 +171,9 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         removeDuplicates();
 
         infoViewText.setText("");
+        if (!gridList.isEmpty()) {
+            numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
+        }
     }
 
     // create the Grid and fill it with empty grids
@@ -156,53 +186,83 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    // init view refs and adapters
-    private void initViews() {
-        // Find a reference to the {@link ListView} in the layout
-        gridListView = findViewById(R.id.createGrid_GridList);
-        if (gridListView == null) {
-            throw new AssertionError("CreateGridActivity.initViews() : null gridListView");
-        }
 
+    // init view adapters and layout managers
+    private void initAdapters() {
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         gridListView.setHasFixedSize(true);
 
         // use a linear layout manager
-        gridListLayoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager gridListLayoutManager = new LinearLayoutManager(this);
         gridListView.setLayoutManager(gridListLayoutManager);
 
-        gridListAdapter = new GridListAdapter(this, gridList, this);
+        gridListAdapter = new GridListAdapter(this, gridList);
         gridListView.setAdapter(gridListAdapter);
 
-        theGridView = findViewById(R.id.createGrid_TheGrid);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        theGridView.setHasFixedSize(true);
+
+        // use a grid layout manager
+        RecyclerView.LayoutManager theGridLayoutManager = new GridLayoutManager(this, GRID_CREATE_NUM_COLS);
+        theGridView.setLayoutManager(theGridLayoutManager);
+
         gridAdapter = new GridAdapter(this, theGrid);
-        if (theGridView == null) {
-            throw new AssertionError("CreateGridActivity.initViews() : null gridView");
-        }
         theGridView.setAdapter(gridAdapter);
 
-        ListView gridDetailsView;
-        gridDetailsView = findViewById(R.id.createGrid_DetailsList);
+
         // We just pass in the song list for the first item in gridList to jumpstart
         // gridDetailsAdapter.  It won't actually display anything until we call showGridInfo()
         // for the first time.
         gridDetailsAdapter = new GridDetailsAdapter(this, gridList.get(0).songList);
         gridDetailsView.setAdapter(gridDetailsAdapter);
+    }
 
-        setGridTotalWidth();
-        theGridView.setNumColumns(GRID_CREATE_NUM_COLS);
+    // setup onClick(), onItemClick() and onItemLongClick() listeners
+    private void initListeners() {
+        View.OnClickListener UIClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()) {
+                    case R.id.createGrid_BackArrow:
+                        goBackToMainMenu();
+                        break;
 
-        backArrowButton = findViewById(R.id.createGrid_BackArrow);
-        settingsButton = findViewById(R.id.createGrid_SettingsButton);
-        settingsLayout = findViewById(R.id.createGrid_SettingsLayout);
-        undeleteLastText = findViewById(R.id.createGrid_Settings_UndeleteLast);
-        undeleteAllText = findViewById(R.id.createGrid_Settings_UndeleteAll);
-        combineByArtistText = findViewById(R.id.createGrid_Settings_CombineArtist);
-        combineByAlbumText = findViewById(R.id.createGrid_Settings_CombineAlbum);
+                    case R.id.createGrid_SettingsButton:
+                        openSettings();
+                        break;
 
-        numGridsView = findViewById(R.id.createGrid_NumGrids);
-        numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
+                    case R.id.createGrid_Settings_UndeleteLast:
+                        undeleteLast();
+                        break;
+
+                    case R.id.createGrid_Settings_UndeleteAll:
+                        undeleteAll();
+                        break;
+
+                    case R.id.createGrid_Settings_CombineArtist:
+                        combineGrids(combineType.artist);
+                        break;
+
+                    case R.id.createGrid_Settings_CombineAlbum:
+                        combineGrids(combineType.album);
+                        break;
+
+                    default:
+                        GeneralTools.notSupported(CreateGridActivity.this);
+                }
+            }
+        };
+
+        // this class implements its own onClick()
+        backArrowButton.setOnClickListener(UIClickListener);
+        settingsButton.setOnClickListener(UIClickListener);
+        undeleteLastText.setOnClickListener(UIClickListener);
+        undeleteAllText.setOnClickListener(UIClickListener);
+        combineByArtistText.setOnClickListener(UIClickListener);
+        combineByAlbumText.setOnClickListener(UIClickListener);
     }
 
     // display a tip for creating a Grid
@@ -217,54 +277,14 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
                 + getString(getResources().getIdentifier(tipName, "string", getPackageName())));
     }
 
-    // setup onClick(), onItemClick() and onItemLongClick() listeners
-    private void initListeners() {
-        // this class implements its own onClick()
-        backArrowButton.setOnClickListener(this);
-        settingsButton.setOnClickListener(this);
-        undeleteLastText.setOnClickListener(this);
-        undeleteAllText.setOnClickListener(this);
-        combineByArtistText.setOnClickListener(this);
-        combineByAlbumText.setOnClickListener(this);
-
-        theGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                chooseGridGrid(position);
-            }
-        });
-
-        // long click a Grid grid to put it back on the gridList
-        theGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
-                returnItemToGridList(position);
-                return true;
-            }
-        });
+    // method for GridAdapter to call for onClick()
+    public void theGridOnClick(int position) {
+        chooseGridGrid(position);
     }
 
-    // non-list and non-grid clicks
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.createGrid_BackArrow :                goBackToMainMenu();
-                break;
-
-            case R.id.createGrid_SettingsButton :           openSettings();
-                break;
-
-            case R.id.createGrid_Settings_UndeleteLast :    undeleteLast();
-                break;
-
-            case R.id.createGrid_Settings_UndeleteAll :     undeleteAll();
-                break;
-
-            case R.id.createGrid_Settings_CombineArtist :   combineGrids(combineType.artist);
-                break;
-
-            case R.id.createGrid_Settings_CombineAlbum :    combineGrids(combineType.album);
-                break;
-
-            default :                                       GeneralTools.notSupported(this);
-        }
+    // method for GridAdapter to call for onLongClick()
+    public void theGridOnLongClick(int position) {
+        returnItemToGridList(position);
     }
 
     public void userDeletesGridListItem(int position) {
@@ -313,12 +333,8 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         }
 
         int index = delGridList.size() - 1;
-        gridList.add(delGridList.get(index));
+        insertGridListItem(delGridList.get(index));
         delGridList.remove(index);
-
-        // sort the gridList
-        Collections.sort(gridList, new GridComparator());
-        updateGridList();
 
         infoViewText.setText(R.string.gridRecovered);
     }
@@ -339,7 +355,9 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
         // sort the gridList
         Collections.sort(gridList, new GridComparator());
-        updateGridList();
+
+        gridListAdapter.notifyDataSetChanged();
+        numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
     }
 
     // currently : moves songs from grid1 to grid2 if the first song of both have the same artist name
@@ -373,14 +391,14 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
         infoViewText.setText(getString(R.string.gridCombined, toRemove.size()));
 
-        // anything that removes items from gridList must first reset currGridListIndex
+        // anything that adds/removes items from gridList must first reset currGridListIndex
         reset_currGridListIndex();
-
         for (GridElement g : toRemove) {
             gridList.remove(g);
         }
 
-        updateGridList();
+        gridListAdapter.notifyDataSetChanged();
+        numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
     }
 
     // this code retrieved from https://gist.github.com/novoda/374533
@@ -484,14 +502,6 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         return (s1.trackNumber == s2.trackNumber);
     }
 
-    // expand the GridView to hold the correct number of columns
-    private void setGridTotalWidth() {
-        ViewGroup.LayoutParams layoutParams = theGridView.getLayoutParams();
-        layoutParams.width = GeneralTools.convertDpToPixels(this, GRID_CREATE_NUM_COLS * MainActivity.GRID_COLUMN_TOTALWIDTH);
-        theGridView.setLayoutParams(layoutParams);
-    }
-
-    // TODO XXX MOVE TO ADAPTER?
     // player pressed a grid on the gridList, highlight it and show details unless this
     // grid was already selected, then unhighlight it and clear details
     public void chooseListGrid(int position) {
@@ -540,8 +550,8 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
             GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
             if (currGridListIndex != -1) {
-                infoViewText.setText(getString(R.string.addedSongs, gridList.get(currGridListIndex).songList.size()));
                 // move all songs from the selected gridList grid to this Grid grid
+                infoViewText.setText(getString(R.string.addedSongs, gridList.get(currGridListIndex).songList.size()));
                 for (Song s : gridList.get(currGridListIndex).songList) {
                     clickedGrid.addSong(s);
                 }
@@ -582,16 +592,34 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
         gridDetailsAdapter.turnOffDetails();
     }
 
+    // add an item from the gridList (in sorted order) and reset currGridListIndex
+    private void insertGridListItem(GridElement g) {
+        // anything that removes/adds items from gridList must first reset currGridListIndex
+        reset_currGridListIndex();
+
+        GridComparator gridComp = new GridComparator();
+        int i;
+        for (i = 0; i < gridList.size(); i++) {
+            if (gridComp.compare(g, gridList.get(i)) < 0) {
+                break;
+            }
+        }
+
+        gridList.add(i, g);
+        gridListAdapter.notifyItemInserted(i);
+        numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
+    }
+
     // remove an item from the gridList and reset currGridListIndex
     private void removeGridListItem(int position) {
         GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
-        // anything that removes items from gridList must first reset currGridListIndex
+        // anything that removes/adds items from gridList must first reset currGridListIndex
         reset_currGridListIndex();
-
         gridList.remove(position);
 
-        updateGridList();
+        numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
+        gridListAdapter.notifyItemRemoved(position);
     }
 
     // user long pressed a grid on the Grid, return it to the gridList
@@ -604,20 +632,11 @@ public class CreateGridActivity extends AppCompatActivity implements View.OnClic
 
         GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
-        gridList.add(clickedGrid);
-        // sort the gridList
-        Collections.sort(gridList, new GridComparator());
-        updateGridList();
+        insertGridListItem(clickedGrid);
 
         theGrid.set(position, emptyGrid);
         gridAdapter.notifyDataSetChanged();
 
         infoViewText.setText(R.string.gridRemoved);
-    }
-
-    // notify gridListAdapter of data changes and update the number of grids
-    private void updateGridList() {
-        gridListAdapter.notifyDataSetChanged();
-        numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
     }
 }

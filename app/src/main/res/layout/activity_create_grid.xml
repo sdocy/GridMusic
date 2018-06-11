@@ -102,7 +102,7 @@
             <!-- grid list -->
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/createGrid_GridList"
-                android:layout_width="150dp"
+                android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:scrollbars="vertical" />
         </LinearLayout>
@@ -111,21 +111,23 @@
         <HorizontalScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <GridView
+                android:layout_height="wrap_content">
+
+                <android.support.v7.widget.RecyclerView
                     android:id="@+id/createGrid_TheGrid"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:columnWidth="@dimen/gridColumnWidth"
-                    android:numColumns="@string/maxGridColumns"
-                    android:verticalSpacing="@dimen/gridPadding"
-                    android:horizontalSpacing="@dimen/gridPadding"
-                    android:stretchMode="columnWidth"
-                    android:gravity="center"/>
-            </LinearLayout>
+                    android:scrollbars="vertical" />
+
+                <TextView
+                    android:id="@+id/createGrid_empty_list"
+                    style="@style/downloadArtInfoMsg"
+                    android:visibility="gone"
+                    android:gravity="center"
+                    android:text="@string/noMusic"/>
+            </RelativeLayout>
         </HorizontalScrollView>
     </LinearLayout>
 </LinearLayout>

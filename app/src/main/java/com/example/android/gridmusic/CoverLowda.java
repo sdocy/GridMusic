@@ -3,15 +3,15 @@ package com.example.android.gridmusic;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 
-// Sasake?
+// Cover lowda.....sasake?
 public class CoverLowda extends AsyncTaskLoader<DownloadedCoverArt> {
 
-    private String musicBrainzFirstURL;
+    private String musicURL;
 
     CoverLowda(Context context, String requestUrl) {
         super(context);
 
-        musicBrainzFirstURL = requestUrl;
+        musicURL = requestUrl;
     }
 
     @Override
@@ -21,8 +21,8 @@ public class CoverLowda extends AsyncTaskLoader<DownloadedCoverArt> {
 
     @Override
     public DownloadedCoverArt loadInBackground() {
-        //Log.d("NETWORK", "retrieving " + musicBrainzFirstURL);
+        //Log.d("NETWORK", "retrieving " + musicURL);
 
-        return NetworkWorker.retrieveAlbumInfo(musicBrainzFirstURL);
+        return NetworkWorker.retrieveAlbumInfo(musicURL);
     }
 }

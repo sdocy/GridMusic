@@ -21,7 +21,6 @@ public class DownloadArtActivity extends AppCompatActivity {
 
     List<CoverArt> albumList;
     private RecyclerView albumListView;
-    private RecyclerView.LayoutManager albumListLayoutManager;
     private TextView emptyListView;
 
     private CoverArtAdapter adapter = null;
@@ -57,9 +56,20 @@ public class DownloadArtActivity extends AppCompatActivity {
 
         getAlbumList();
 
-        initAdapters();
+        if (albumList.isEmpty()) {
+            // display empty list view
+            emptyListView.setVisibility(View.VISIBLE);
+            albumListView.setVisibility(View.GONE);
 
-        initListeners();
+            // grey out auto-find buttons
+            findAllArtView.setTextColor(getResources().getColor(R.color.filterPlayed));
+            findUnknownArtView.setTextColor(getResources().getColor(R.color.filterPlayed));
+            backArrowButton.setVisibility(View.INVISIBLE);
+        } else {
+            initAdapters();
+
+            initListeners();
+        }
     }
 
     @Override
@@ -80,7 +90,7 @@ public class DownloadArtActivity extends AppCompatActivity {
         albumListView.setHasFixedSize(true);
 
         // use a linear layout manager
-        albumListLayoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager albumListLayoutManager = new LinearLayoutManager(this);
         albumListView.setLayoutManager(albumListLayoutManager);
 
         findAllArtView = findViewById(R.id.download_art_find_all_art);
@@ -113,15 +123,7 @@ public class DownloadArtActivity extends AppCompatActivity {
     }
 
     private void initAdapters() {
-        if (albumList.isEmpty()) {
-            emptyListView.setVisibility(View.VISIBLE);
-            albumListView.setVisibility(View.GONE);
-        }else {
-            emptyListView.setVisibility(View.GONE);
-            albumListView.setVisibility(View.VISIBLE);
-        }
-
-        adapter = new CoverArtAdapter(this, albumList, getLoaderManager(), this);
+        adapter = new CoverArtAdapter(this, albumList, getLoaderManager());
 
         albumListView.setAdapter(adapter);
     }
@@ -214,7 +216,7 @@ public class DownloadArtActivity extends AppCompatActivity {
     // it uses MediaStore to find all music files and related cover art on this device
     private List<CoverArt> getMusicList() {
         Cursor cursor;
-        List<CoverArt> songs = new ArrayList<>();
+        List<CoverArt> grids = new ArrayList<>();
 
         //Retrieve a list of Music files currently listed in the Media store DB via URI.
 
@@ -238,9 +240,9 @@ public class DownloadArtActivity extends AppCompatActivity {
             //Log.e("GET_SONGS", cursor.getString(0) + "||" + cursor.getString(1) + "||" + cursor.getString(2)
             //        + "||" +  cursor.getString(3) + "||" + cursor.getString(4) + "||" + cursor.getString(5));
 
-            songs.add(new CoverArt(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
+            grids.add(new CoverArt(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM))));
-            CoverArt s = songs.get(songs.size() - 1);
+            CoverArt s = grids.get(grids.size() - 1);
             // songName, artistName, albumName, filePath, trackNumber
             /*s.addSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
@@ -265,6 +267,6 @@ public class DownloadArtActivity extends AppCompatActivity {
             }
         }
 
-        return songs;
+        return grids;
     }
 }

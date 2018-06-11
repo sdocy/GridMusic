@@ -16,12 +16,6 @@ import android.widget.TextView;
 // All album cover art was downloaded from Itunes for albums / songs which I own
 
 public class MainActivity extends AppCompatActivity {
-
-    // these define the current default grid layout
-    private final static int GRID_COLUMN_WIDTH = 50 + 10;
-    private final static int GRID_COLUMN_PADDING = 4;
-    final static int GRID_COLUMN_TOTALWIDTH = GRID_COLUMN_WIDTH + GRID_COLUMN_PADDING;
-
     // main menu navigation buttons
     private TextView playGridText;
     private TextView createGridText;

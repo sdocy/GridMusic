@@ -201,7 +201,6 @@
 			<li>Add grid counter for the Grid</li>
 			<li>We'll also need an interface for splitting a grid back into individual songs</li>
 			<li>Serialize and save the Grid to disk</li>
-			<li>Investigate better cover-art grabbing apps to recommend to users</li>
 			<li>It might be nice to add the ability to play music in the Create Grid activity, at least snippets, in case the user
 				is unsure what a particular song they have is</li>
 		</ul>
@@ -261,21 +260,39 @@
 		<ul>
 			<li>Made all methods in GeneralTools static.</li>
 			<li>Implemented basic ViewHolders for all ArrayAdapters</li>
-			<li>Switched from ListViews to RecyclerViews for DownloadArt::albumList and CreateGrid::gridList</li>
+			<li>Switched from ListViews to RecyclerViews for CoverArtAdapter and GridListAdapter</li>
 		</ul>
 	</div>
 </div>
 
-
+<div>
+	<div class="text-left indentleft">
+		<p><br/><br/>Version 4.02 June 10, 2018</p>
+		<ul>
+			<li>Switched from GridViews to RecyclerViews for GridAdapter</li>
+			<li>Figured out how to use Context to call a method in the instantiating class</li>
+			<li>Created my own interface for CreateGridActivity and PlayGridActivity to implement so that GridAdapter (used by
+				both classes) could call the same method (as far as GridAdapter is concerned) when a Grid element is clicked
+				regardless of which Activity had created it.  This is required because it seems you have to implement onClick()
+				and onLongClick() inside the RecyclerView Adapter since it does not provide onItemClick() and onItemLongClick()</li>
+			<li>Replaced setTag / getTag with getAdapterPosition() for RecyclerViews</li>
+			<li>Replaced notifyDataSetChanged() with notifyItemRemoved() where applicable</li>
+			<li>When adding items back to the gridList, instead of adding to the end and then re-sorting, I now use my GridComparator
+				to find the correct insertion index to insert at.  Also changed from notifyDataSetChanged() to notifyItemInserted()
+				when putting items back on the gridList.  This was done when moving a grid back to the gridList from theGrid and
+				when 'Undeleting Last'.  'Undelete All' still adds to the end and re-sorts since many items may be getting put back on
+				the gridList.</li>
+			<li>Set up empty music view for CreateGridActivity</li>
+			<li>Switched gridList image and text to be vertically laid out, instead of horizontally, to provide more space for the Grid</li>
+		</ul>
+	</div>
+</div>
 
 <div>
 	<div class="text-left indentleft">
 		<p><br/><br/>TODO<br/></p>
 					
 		<ul>
-			<li>Investigate overhauling my ArrayAdapters so that they actually do all the managing of List state, rather than keeping  and
-			    directly accessing a reference to the lists in my Activity class</li>
-			<li>Investigate replacing the GridViews with RecyclerViews</li>
 			<li>Move current options view to a drawer</li>
 			<li>Use settings icon for an overlay tutorial view</li>
 			<li>In single play mode, if a user selects a grid, we skip that grid if all songs from it have already been played, perhaps we
@@ -285,9 +302,10 @@
 			<li>See how to save and load Grids on device</li>
 			<li>Go through the guides I found for building Android Audio Players</li>
 			<li>Go back and retry supporting different grid sizes</li>
-			<li>See how the app falls over if no music files are found and setup ListView setEmptyView()</li>
 			<li>Replace implementing onClickListener with just creating an onClickListener that includes a switch statement for use by
 				multiple UI objects</li>
+			<li>RecyclerView LayoutAdapter animations?  Hmmmmmm........</li>
+			<li>Enable backbutton even if no music was found</li>
 		</ul>
 	</div>
 </div>
