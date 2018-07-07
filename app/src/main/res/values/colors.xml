@@ -4,6 +4,7 @@
     <color name="darkBlue">#000080</color>
     <color name="myBlue">#0000ff</color>
     <color name="highlightBlue">#b3f0ff</color>
+    <color name="dividerBlue">#4d94ff</color>
     <color name="errorRed">#990000</color>
 
     <!-- grid colors -->

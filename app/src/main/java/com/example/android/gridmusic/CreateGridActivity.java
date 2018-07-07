@@ -4,16 +4,19 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import java.util.ArrayList;
@@ -78,20 +81,11 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     private TextView infoViewText;
     private ImageView backArrowButton;          // go back to main menu
     private ImageView settingsButton;           // open setting layout
-    private LinearLayout settingsLayout;        // expandable layout to expose settings
+    private NavigationView optionsDrawer;
+    private DrawerLayout optionsDrawerLayout;
+    private ImageView infoButton;
+
     private TextView numGridsView;              // number of songs in the gridList
-    private TextView undeleteLastText;          // clickable settings textview to undelete the last song deleted
-    private TextView undeleteAllText;           // clickable settings textview to undelete all deleted songs
-    private TextView combineByArtistText;       // clickable settings textview to combine all grids for same artist
-    private TextView combineByAlbumText;        // clickable settings textview to combine all grids for same album
-
-    private boolean showingSettings = false;    // is the settings layout expanded?
-
-    // expand/collapse settings layout
-    private LinearLayout.LayoutParams closedParams =
-            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-    private LinearLayout.LayoutParams openParams =
-            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
     // user-chosen grids
     int currGridListIndex = -1;
@@ -149,11 +143,9 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         backArrowButton = findViewById(R.id.createGrid_BackArrow);
         settingsButton = findViewById(R.id.createGrid_SettingsButton);
-        settingsLayout = findViewById(R.id.createGrid_SettingsLayout);
-        undeleteLastText = findViewById(R.id.createGrid_Settings_UndeleteLast);
-        undeleteAllText = findViewById(R.id.createGrid_Settings_UndeleteAll);
-        combineByArtistText = findViewById(R.id.createGrid_Settings_CombineArtist);
-        combineByAlbumText = findViewById(R.id.createGrid_Settings_CombineAlbum);
+        optionsDrawer = findViewById(R.id.createGrid_OptionsDrawer);
+        optionsDrawerLayout = findViewById(R.id.createGrid_DrawerLayout);
+        infoButton = findViewById(R.id.createGrid_InfoButton);
 
         numGridsView = findViewById(R.id.createGrid_NumGrids);
     }
@@ -226,28 +218,13 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
             @Override
             public void onClick(View v) {
                 switch (v.getId()) {
-                    case R.id.createGrid_BackArrow:
-                        goBackToMainMenu();
+                    case R.id.createGrid_BackArrow :        goBackToMainMenu();
                         break;
 
-                    case R.id.createGrid_SettingsButton:
-                        openSettings();
+                    case R.id.createGrid_SettingsButton :   openSettings(Gravity.START);
                         break;
 
-                    case R.id.createGrid_Settings_UndeleteLast:
-                        undeleteLast();
-                        break;
-
-                    case R.id.createGrid_Settings_UndeleteAll:
-                        undeleteAll();
-                        break;
-
-                    case R.id.createGrid_Settings_CombineArtist:
-                        combineGrids(combineType.artist);
-                        break;
-
-                    case R.id.createGrid_Settings_CombineAlbum:
-                        combineGrids(combineType.album);
+                    case R.id.createGrid_InfoButton :       openSettings(Gravity.END);
                         break;
 
                     default:
@@ -259,10 +236,34 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         // this class implements its own onClick()
         backArrowButton.setOnClickListener(UIClickListener);
         settingsButton.setOnClickListener(UIClickListener);
-        undeleteLastText.setOnClickListener(UIClickListener);
-        undeleteAllText.setOnClickListener(UIClickListener);
-        combineByArtistText.setOnClickListener(UIClickListener);
-        combineByAlbumText.setOnClickListener(UIClickListener);
+        infoButton.setOnClickListener(UIClickListener);
+
+        optionsDrawer.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                        switch (menuItem.getItemId()) {
+                            case R.id.createGridDrawer_UndeleteLast :    undeleteLast();
+                                break;
+
+                            case R.id.createGridDrawer_UndeleteAll :     undeleteAll();
+                                break;
+
+                            case R.id.createGridDrawer_CombineGridsByArtist :   combineGrids(combineType.artist);
+                                break;
+
+                            case R.id.createGridDrawer_CombineGridsByAlbum :    combineGrids(combineType.album);
+                                break;
+
+                            default :                                       GeneralTools.notSupported(CreateGridActivity.this);
+                        }
+
+                        // close drawer when item is tapped
+                        optionsDrawerLayout.closeDrawers();
+
+                        return true;
+                    }
+                });
     }
 
     // display a tip for creating a Grid
@@ -308,19 +309,11 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
-    // user pressed settings icon, open the settings layout
-    private void openSettings() {
+    // user pressed settings/ info icon, open the appropriate drawer
+    private void openSettings(int gravity) {
         GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
-        if (showingSettings) {
-            // settings are currently visible, hide them
-            settingsLayout.setLayoutParams(closedParams);
-        } else {
-            // settings are currently hidden, show them
-            settingsLayout.setLayoutParams(openParams);
-        }
-
-        showingSettings = !showingSettings;
+        optionsDrawerLayout.openDrawer(gravity);
     }
 
     // undelete the last grid that was deleted from the gridList

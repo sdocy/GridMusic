@@ -25,10 +25,10 @@
     <string name="backArrow">back arrow</string>
     <string name="resetPlayed">Reset played grids.</string>
     <string name="resettingPlayed">Resetting all played grids.</string>
-    <string name="oneSong">Playing one song per grid.</string>
-    <string name="allSongs">Playing all songs on each grid.</string>
-    <string name="editGrid">Edit Grid layout.</string>
+    <string name="oneSong">Play one song per grid.</string>
+    <string name="allSongs">Play all songs on each grid.</string>
     <string name="notSupported">This feature is not available in the trial version.</string>
+    <string name="information">information</string>
 
     <!-- daily playGrid tips -->
     <string name="tip">Tip :</string>

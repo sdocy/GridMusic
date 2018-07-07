@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/createGridDrawer_UndeleteGroup"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/createGridDrawer_UndeleteLast"
+            android:title="@string/undeleteLast" />
+        <item
+            android:id="@+id/createGridDrawer_UndeleteAll"
+            android:title="@string/undeleteAll" />
+    </group>
+
+    <group android:id="@+id/createGridDrawer_CombineGridsGroup"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/createGridDrawer_CombineGridsByArtist"
+            android:title="@string/combineByArtist" />
+        <item
+            android:id="@+id/createGridDrawer_CombineGridsByAlbum"
+            android:title="@string/combineByAlbum" />
+    </group>
+</menu>

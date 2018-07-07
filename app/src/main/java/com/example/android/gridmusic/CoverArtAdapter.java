@@ -263,6 +263,9 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
         holder.noNet.setVisibility(View.INVISIBLE);
         holder.progress.setVisibility(View.INVISIBLE);
         holder.downloadArt.setVisibility(View.INVISIBLE);
+        holder.downloadArtCheck.setVisibility(View.INVISIBLE);
+        holder.deviceArtCheck.setVisibility(View.VISIBLE);
+        holder.deviceArt.setColorFilter(myContext.getResources().getColor(R.color.filterNotPlayed));
     }
 
     // we have no internet connect, "no internet" message is visible
@@ -272,6 +275,9 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
         holder.noNet.setVisibility(View.VISIBLE);
         holder.progress.setVisibility(View.INVISIBLE);
         holder.downloadArt.setVisibility(View.INVISIBLE);
+        holder.downloadArtCheck.setVisibility(View.INVISIBLE);
+        holder.deviceArtCheck.setVisibility(View.VISIBLE);
+        holder.deviceArt.setColorFilter(myContext.getResources().getColor(R.color.filterNotPlayed));
     }
 
     // find cover art for the specified item

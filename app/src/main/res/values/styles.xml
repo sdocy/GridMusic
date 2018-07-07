@@ -2,6 +2,7 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:listDivider">@color/dividerBlue</item>
     </style>
 
     <style name="mainButton">
@@ -11,6 +12,7 @@
         <item name="android:textSize">@dimen/mainButtonText</item>
         <item name="android:gravity">center</item>
         <item name="android:layout_margin">16dp</item>
+        <item name="android:padding">4dp</item>
         <item name="android:lines">2</item>
         <item name="android:textColor">@color/MainMenuTextColor</item>
     </style>
@@ -36,12 +38,21 @@
     <style name="settingsButton">
         <item name="android:layout_width">@dimen/settingsIconDimen</item>
         <item name="android:layout_height">@dimen/settingsIconDimen</item>
-        <item name="android:alpha">0.7</item>
         <item name="android:background">#000000</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:adjustViewBounds">true</item>
+        <item name="android:layout_marginLeft">8dp</item>
         <item name="android:layout_alignParentRight">true</item>
         <item name="android:src">@drawable/settings</item>
+    </style>
+
+    <style name="infoButton">
+        <item name="android:layout_width">@dimen/settingsIconDimen</item>
+        <item name="android:layout_height">@dimen/settingsIconDimen</item>
+        <item name="android:background">#000000</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:src">@drawable/information</item>
     </style>
 
     <style name="settingsOption">

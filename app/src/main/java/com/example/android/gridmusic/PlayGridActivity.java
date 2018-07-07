@@ -8,18 +8,21 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.os.Handler;
 
@@ -63,19 +66,14 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     private TextView playSongText;                  // shows title of song being played
 
     private ImageView backArrowButton;              // go back to main menu
-    private ImageView settingsButton;               // open setting layout
-    private LinearLayout settingsLayout;            // expandable layout to expose settings
-    private TextView resetPlayedGridsText;              // set all grids back to `not played`
-    private TextView songsPerGridText;                  // how many songs to play per grid
-    private boolean playEntireGrid = false;         // play all songs on a grid before choosing next grid?
-    private TextView editGridText;                  // enter Grid edit mode
 
-    private boolean showingSettings = false;        // is the settings layout expanded?
-    // expand/collapse settings layout
-    private LinearLayout.LayoutParams closedParams =
-            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-    private LinearLayout.LayoutParams openParams =
-            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+
+    private ImageView optionsButton;               // open options layout
+    private NavigationView optionsDrawer;
+    private DrawerLayout optionsDrawerLayout;
+    private boolean playEntireGrid = false;         // play all songs on a grid before choosing next grid?
+    private ImageView infoButton;
 
     private Random RNG = new Random();
 
@@ -254,8 +252,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         grid = theGrid.get(theGrid.size() - 1);
         grid.addSong("Mad Man Moon", "Genesis", "some album", "/Music/mad_man_moon.m4a", 1);
         grid.addSong("Ripples", "Genesis", "some album", "/Music/ripples.m4a", 1);
-        // TODO misspelled this song name to introduce an access error
-        grid.addSong("A Trick Of The Tail", "Genesis", "some album", "/Music/aa_trick_of_the_tail.m4a", 1);
+        grid.addSong("A Trick Of The Tail", "Genesis", "some album", "/Music/a_trick_of_the_tail.m4a", 1);
 
         theGrid.add(new GridElement(R.drawable.highlights));
         grid = theGrid.get(theGrid.size() - 1);
@@ -411,11 +408,10 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         playSongText = findViewById(R.id.playGrid_SongText);
 
         backArrowButton = findViewById(R.id.playGrid_BackArrow);
-        settingsButton = findViewById(R.id.playGrid_SettingsButton);
-        settingsLayout = findViewById(R.id.playGrid_SettingsLayout);
-        resetPlayedGridsText = findViewById(R.id.playGrid_Settings_ResetPlayedGrids);
-        songsPerGridText = findViewById(R.id.playGrid_Settings_SongsPerGrid);
-        editGridText = findViewById(R.id.playGrid_Settings_EditGrid);
+        optionsButton = findViewById(R.id.playGrid_SettingsButton);
+        optionsDrawer = findViewById(R.id.playGrid_OptionsDrawer);
+        optionsDrawerLayout = findViewById(R.id.playGrid_DrawerLayout);
+        infoButton = findViewById(R.id.playGrid_InfoButton);
     }
 
     // misc setup
@@ -455,13 +451,10 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
                     case R.id.playGrid_BackArrow :                  goBackToMainMenu();
                         break;
 
-                    case R.id.playGrid_SettingsButton :             openSettings();
+                    case R.id.playGrid_SettingsButton :             openSettings(Gravity.START);
                         break;
 
-                    case R.id.playGrid_Settings_ResetPlayedGrids :  resetGrids(true);
-                        break;
-
-                    case R.id.playGrid_Settings_SongsPerGrid :      changeSongsPerGrid();
+                    case R.id.playGrid_InfoButton :                 openSettings(Gravity.END);
                         break;
 
                     default :                                       GeneralTools.notSupported(PlayGridActivity.this);
@@ -473,13 +466,11 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         controlStop.setOnClickListener(UIClickListener);
         controlSkipFastForward.setOnClickListener(UIClickListener);
         backArrowButton.setOnClickListener(UIClickListener);
-        settingsButton.setOnClickListener(UIClickListener);
-        resetPlayedGridsText.setOnClickListener(UIClickListener);
-        songsPerGridText.setOnClickListener(UIClickListener);
+        optionsButton.setOnClickListener(UIClickListener);
+        infoButton.setOnClickListener(UIClickListener);
 
         // features currently not implemented
         controlSkipRewind.setOnClickListener(UIClickListener);
-        editGridText.setOnClickListener(UIClickListener);
 
         songDoneListener = (new MediaPlayer.OnCompletionListener() {
             @Override
@@ -537,6 +528,32 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
                 }
             }
         };
+
+        optionsDrawer.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                        switch (menuItem.getItemId()) {
+                            case (R.id.playGridDrawer_OneSongPerGrid) :     menuItem.setChecked(true);
+                                                                            changeSongsPerGrid(false);
+                                                                            break;
+
+                            case (R.id.playGridDrawer_AllSongsPerGrid) :    menuItem.setChecked(true);
+                                                                            changeSongsPerGrid(true);
+                                                                            break;
+
+                            case (R.id.playGridDrawer_ResetPlayedGrids) :   resetGrids(true);
+                                                                            break;
+
+                            default :                                       GeneralTools.notSupported(PlayGridActivity.this);
+                        }
+
+                        // close drawer when item is tapped
+                        optionsDrawerLayout.closeDrawers();
+
+                        return true;
+                    }
+                });
     }
 
     // display a tip for playing a Grid
@@ -730,19 +747,11 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
-    // user pressed settings icon, open the settings layout
-    private void openSettings() {
+    // user pressed settings/ info icon, open the appropriate drawer
+    private void openSettings(int gravity) {
         GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
-        if (showingSettings) {
-            // settings are currently visible, hide them
-            settingsLayout.setLayoutParams(closedParams);
-        } else {
-            // settings are currently hidden, show them
-            settingsLayout.setLayoutParams(openParams);
-        }
-
-        showingSettings = !showingSettings;
+        optionsDrawerLayout.openDrawer(gravity);
     }
 
     // set all played grids to not-played
@@ -750,7 +759,6 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     // If we are playing music, then the currently playing grid is not reset.
     private void resetGrids(boolean fromUser) {
         if (fromUser) {
-            GeneralTools.flashText(this, resetPlayedGridsText, R.color.highlightBlue, R.color.myBlue, 75);
             GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
             GeneralTools.showToast(this, PlayGridActivity.this.getString(R.string.resettingPlayed));
         }
@@ -788,17 +796,10 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     }
 
     // user pressed setting to change the songs played per grid
-    private void changeSongsPerGrid() {
-        GeneralTools.flashText(this, songsPerGridText, R.color.highlightBlue, R.color.myBlue, 75);
+    private void changeSongsPerGrid(boolean playAll) {
         GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
-        if (playEntireGrid) {
-            songsPerGridText.setText(R.string.oneSong);
-        } else {
-            songsPerGridText.setText(R.string.allSongs);
-        }
-
-        playEntireGrid = !playEntireGrid;
+        playEntireGrid = playAll;
 
         if (currGridIndex != -1) {
             // if we have a grid we are playing, we should start playEntireGrid with

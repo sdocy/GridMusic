@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/playGridDrawer_SongsPerGridGroup"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/playGridDrawer_OneSongPerGrid"
+            android:checkable="true"
+            android:checked="true"
+            android:title="@string/oneSong" />
+        <item
+            android:id="@+id/playGridDrawer_AllSongsPerGrid"
+            android:checkable="true"
+            android:title="@string/allSongs" />
+    </group>
+
+    <group android:id="@+id/playGridDrawer_ResetPlayedGridsGroup"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/playGridDrawer_ResetPlayedGrids"
+            android:title="@string/resetPlayed" />
+    </group>
+</menu>
