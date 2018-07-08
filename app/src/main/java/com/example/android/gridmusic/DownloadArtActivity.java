@@ -1,6 +1,9 @@
 package com.example.android.gridmusic;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.provider.MediaStore;
@@ -17,9 +20,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class DownloadArtActivity extends AppCompatActivity {
+public class DownloadArtActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    List<CoverArt> albumList;
+    List<CoverArt> albumList = new ArrayList<>();
     private RecyclerView albumListView;
     private TextView emptyListView;
 
@@ -54,22 +57,8 @@ public class DownloadArtActivity extends AppCompatActivity {
 
         initViews();
 
-        getAlbumList();
-
-        if (albumList.isEmpty()) {
-            // display empty list view
-            emptyListView.setVisibility(View.VISIBLE);
-            albumListView.setVisibility(View.GONE);
-
-            // grey out auto-find buttons
-            findAllArtView.setTextColor(getResources().getColor(R.color.filterPlayed));
-            findUnknownArtView.setTextColor(getResources().getColor(R.color.filterPlayed));
-            backArrowButton.setVisibility(View.INVISIBLE);
-        } else {
-            initAdapters();
-
-            initListeners();
-        }
+        // kick off cursorLoader to get music
+        getLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -112,9 +101,7 @@ public class DownloadArtActivity extends AppCompatActivity {
     }
 
     // initialize music list
-    private void getAlbumList() {
-        albumList = getMusicList();
-
+    private void cleanAlbumList() {
         // sort the songList
         Collections.sort(albumList, new AlbumComparator());
 
@@ -212,12 +199,8 @@ public class DownloadArtActivity extends AppCompatActivity {
         return (a.albumName.equals(b.albumName));
     }
 
-    // this code retrieved from https://gist.github.com/novoda/374533
-    // it uses MediaStore to find all music files and related cover art on this device
-    private List<CoverArt> getMusicList() {
-        Cursor cursor;
-        List<CoverArt> grids = new ArrayList<>();
-
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         //Retrieve a list of Music files currently listed in the Media store DB via URI.
 
         //Some audio may be explicitly marked as not being music
@@ -232,41 +215,63 @@ public class DownloadArtActivity extends AppCompatActivity {
                 MediaStore.Audio.Media.TRACK
         };
 
-        // deprecated, should use CursorLoader
-        cursor = this.managedQuery(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection,
-                selection, null, null);
+        return new CursorLoader(this, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection, selection, null, null);
+    }
 
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         while (cursor.moveToNext()) {
             //Log.e("GET_SONGS", cursor.getString(0) + "||" + cursor.getString(1) + "||" + cursor.getString(2)
             //        + "||" +  cursor.getString(3) + "||" + cursor.getString(4) + "||" + cursor.getString(5));
 
-            grids.add(new CoverArt(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
-                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM))));
-            CoverArt s = grids.get(grids.size() - 1);
-            // songName, artistName, albumName, filePath, trackNumber
-            /*s.addSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
-                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
+            albumList.add(new CoverArt(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)),
-                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
-                    cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.TRACK)));*/
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))));
+        }
+        cursor.close();
+
+        cleanAlbumList();
+
+        if (albumList.isEmpty()) {
+            // display empty list view
+            emptyListView.setVisibility(View.VISIBLE);
+            albumListView.setVisibility(View.GONE);
+
+            // grey out auto-find buttons
+            findAllArtView.setTextColor(getResources().getColor(R.color.filterPlayed));
+            findUnknownArtView.setTextColor(getResources().getColor(R.color.filterPlayed));
+            backArrowButton.setVisibility(View.INVISIBLE);
+        } else {
+            initAdapters();
+
+            initListeners();
+        }
+
+        for (int  i = 0; i < albumList.size(); i++) {
+            CoverArt album = albumList.get(i);
 
             Cursor cursorArt = getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
                     new String[] {MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
                     MediaStore.Audio.Albums._ID+ "=?",
-                    new String[] {cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))}, null);
+                    new String[] {album.albumID}, null);
+
             if (cursorArt != null) {
                 if (cursorArt.moveToFirst()) {
                     String path = cursorArt.getString(cursorArt.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
                     if (path != null) {
-                        //Log.e("GET_ART", path);
-                        s.deviceArtPath = path;
+                        album.deviceArtPath = path;
+
+                        adapter.notifyItemChanged(i);
                     }
                 }
 
                 cursorArt.close();
             }
         }
+    }
 
-        return grids;
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

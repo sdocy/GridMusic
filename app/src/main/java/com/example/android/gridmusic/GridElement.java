@@ -39,8 +39,8 @@ public class GridElement {
     }
 
     // add a song to this grid
-    public void addSong(String song, String artist, String album, String path, int track) {
-        Song newSong = new Song(song, artist, album, path, track);
+    public void addSong(String song, String artist, String album, String path, int track, String id) {
+        Song newSong = new Song(song, artist, album, path, track, id);
 
         songList.add(newSong);
         numSongs++;

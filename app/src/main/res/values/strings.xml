@@ -58,7 +58,7 @@
     <string name="createTip8">Enhance Grid Music by using your favorite app to download album cover art</string>
 
     <!-- create grid status msgs -->
-    <string name="loadingSongs">Loading songs&#8230;</string>
+    <string name="loadingMusic">Loading music&#8230;</string>
     <string name="gridRecovered">Grid recovered</string>
     <string name="allRecovered" formatted="false">Recovered %1$d grid(s)</string>
     <string name="gridCombined" formatted="false">Combined %1$d grid(s)</string>

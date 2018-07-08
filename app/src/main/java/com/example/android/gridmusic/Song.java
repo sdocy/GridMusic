@@ -9,11 +9,12 @@ public class Song {
     boolean errored;        // did an error occur while trying to play the song?
     String filePath;        // path to the music file
     int trackNumber;
+    String albumID;
 
     // String song - song name
     // String artist - artist name
     // int audioR - audio resource id
-    Song(String song, String artist, String album, String path, int track) {
+    Song(String song, String artist, String album, String path, int track, String id) {
         songName = song;
         artistName = artist;
         albumName = album;
@@ -21,5 +22,6 @@ public class Song {
         played = false;
         errored = false;
         trackNumber = track;
+        albumID = id;
     }
 }

@@ -5,6 +5,7 @@ package com.example.android.gridmusic;
 public class CoverArt {
     String artistName;
     String albumName;
+    String albumID;
     String deviceArtPath;       // string to cover art located on the device
     state artState;
     DownloadedCoverArt downloadArt;
@@ -12,9 +13,10 @@ public class CoverArt {
 
     enum state {find, loading, loaded, noart, nointernet}       // list item states for each album
 
-    CoverArt(String artist, String album) {
+    CoverArt(String artist, String album, String id) {
         artistName = artist;
         albumName = album;
+        albumID = id;
         artState = CoverArt.state.find;
         downloadArt = null;
         useDownloadArt = false;

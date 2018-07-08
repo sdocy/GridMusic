@@ -1,6 +1,9 @@
 package com.example.android.gridmusic;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.provider.MediaStore;
@@ -25,7 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-public class CreateGridActivity extends AppCompatActivity implements TheGridClicks {
+public class CreateGridActivity extends AppCompatActivity implements TheGridClicks, LoaderManager.LoaderCallbacks<Cursor> {
 
     // for sorting the gridList
     //sort by artist name -> album name -> track number
@@ -51,8 +54,8 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     enum combineType {artist, album}
 
     // Grid size
-    private final int GRID_CREATE_NUM_COLS = 20;
-    private final int GRID_CREATE_NUM_ROWS = 20;
+    private final static int GRID_CREATE_NUM_COLS = 20;
+    private final static int GRID_CREATE_NUM_ROWS = 20;
 
     // list of grids to place
     private List<GridElement> gridList = new ArrayList<>();
@@ -71,7 +74,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     // view for list of songs on a grid
     ListView gridDetailsView;
 
-    // reference to an empty griod object
+    // reference to an empty grid object
     private GridElement emptyGrid;
 
     // grid details list
@@ -98,24 +101,8 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         initViews();
 
-        initGridList();
-
-        if (gridList.isEmpty()) {
-            // display empty list view
-            emptyListView.setVisibility(View.VISIBLE);
-            theGridView.setVisibility(View.GONE);
-
-            backArrowButton.setVisibility(View.INVISIBLE);
-            settingsButton.setVisibility(View.INVISIBLE);
-        } else {
-            initGridArray();
-
-            initAdapters();
-
-            initListeners();
-
-            initTips();
-        }
+        // kick off cursorLoader to get music
+        getLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -151,10 +138,10 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     }
 
     // import and display music
-    private void initGridList() {
-        infoViewText.setText(R.string.loadingSongs);
-
-        gridList = getMusicList();
+    private void cleanGridList() {
+        if (gridList.isEmpty())  {
+            return;
+        }
 
         // sort the gridList
         Collections.sort(gridList, new GridComparator());
@@ -163,9 +150,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         removeDuplicates();
 
         infoViewText.setText("");
-        if (!gridList.isEmpty()) {
-            numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
-        }
+        numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
     }
 
     // create the Grid and fill it with empty grids
@@ -394,62 +379,6 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         numGridsView.setText(getString(R.string.gridsTag, gridList.size()));
     }
 
-    // this code retrieved from https://gist.github.com/novoda/374533
-    private ArrayList<GridElement> getMusicList() {
-        Cursor cursor;
-        ArrayList<GridElement> grids = new ArrayList<>();
-
-        //Retrieve a list of Music files currently listed in the Media store DB via URI.
-
-        //Some audio may be explicitly marked as not being music
-        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
-
-        String[] projection = {
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.ALBUM_ID,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.TRACK
-        };
-
-        // deprecated, use CursorLoader
-        cursor = this.managedQuery(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection,
-                selection, null, null);
-
-        while (cursor.moveToNext()) {
-            //Log.e("GET_SONGS", cursor.getString(0) + "||" + cursor.getString(1) + "||" + cursor.getString(2)
-            //        + "||" +  cursor.getString(3) + "||" + cursor.getString(4) + "||" + cursor.getString(5));
-
-            grids.add(new GridElement(R.drawable.unknown));
-            GridElement grid = grids.get(grids.size() - 1);
-            // songName, artistName, albumName, filePath, trackNumber
-            grid.addSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
-                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
-                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)),
-                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
-                    cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.TRACK)));
-
-            Cursor cursorArt = getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                    new String[] {MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
-                    MediaStore.Audio.Albums._ID+ "=?",
-                    new String[] {cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))}, null);
-            if (cursorArt != null) {
-                if (cursorArt.moveToFirst()) {
-                    String path = cursorArt.getString(cursorArt.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
-                    if (path != null) {
-                        //Log.e("GET_ART", path);
-                        grid.albumArtPath = path;
-                    }
-                }
-
-                cursorArt.close();
-            }
-        }
-
-        return grids;
-    }
-
     // Remove duplicate songs.
     // We are comparing songs, so it's hard to do if there are multiple songs in a grid
     // so we only support removing dupes when we have single-song grids, such as
@@ -631,5 +560,96 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         gridAdapter.notifyDataSetChanged();
 
         infoViewText.setText(R.string.gridRemoved);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        //Retrieve a list of Music files currently listed in the Media store DB via URI.
+        infoViewText.setText(R.string.loadingMusic);
+
+        //Some audio may be explicitly marked as not being music
+        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+
+        String[] projection = {
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.TRACK
+        };
+
+        return new CursorLoader(this, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection, selection, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        while (cursor.moveToNext()) {
+            //Log.e("GET_SONGS", cursor.getString(0) + "||" + cursor.getString(1) + "||" + cursor.getString(2)
+            //        + "||" +  cursor.getString(3) + "||" + cursor.getString(4) + "||" + cursor.getString(5));
+
+            gridList.add(new GridElement(R.drawable.unknown));
+            GridElement grid = gridList.get(gridList.size() - 1);
+
+            // songName, artistName, albumName, filePath, trackNumber, albumID
+            grid.addSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)),
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
+                    cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.TRACK)),
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)));
+        }
+        cursor.close();
+
+        cleanGridList();
+
+        infoViewText.setText("");
+
+        if (gridList.isEmpty()) {
+            // display empty list view
+            emptyListView.setVisibility(View.VISIBLE);
+            theGridView.setVisibility(View.GONE);
+        } else {
+            backArrowButton.setVisibility(View.VISIBLE);
+            infoButton.setVisibility(View.VISIBLE);
+            settingsButton.setVisibility(View.VISIBLE);
+
+            initGridArray();
+
+            initAdapters();
+
+            initListeners();
+
+            initTips();
+        }
+
+        // get album art
+        for (int i = 0; i < gridList.size(); i++) {
+            GridElement grid = gridList.get(i);
+
+            Cursor cursorArt = getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                    new String[] {MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
+                    MediaStore.Audio.Albums._ID+ "=?",
+                    new String[] {grid.getNthSong(0).albumID}, null);
+
+            if (cursorArt != null) {
+                if (cursorArt.moveToFirst()) {
+                    String path = cursorArt.getString(cursorArt.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+                    if (path != null) {
+                        //Log.e("GET_ART", path);
+                        grid.albumArtPath = path;
+
+                        gridListAdapter.notifyItemChanged(i);
+                    }
+                }
+
+                cursorArt.close();
+            }
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

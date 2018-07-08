@@ -25,6 +25,7 @@
             <ImageView
                 android:id="@+id/createGrid_BackArrow"
                 android:contentDescription="@string/backArrow"
+                android:visibility="invisible"
                 style="@style/backArrow"/>
 
             <TextView
@@ -40,11 +41,13 @@
             <ImageView
                 android:id="@+id/createGrid_SettingsButton"
                 android:contentDescription="@string/settings"
+                android:visibility="invisible"
                 style="@style/settingsButton"/>
 
             <ImageView
                 android:id="@+id/createGrid_InfoButton"
                 android:contentDescription="@string/information"
+                android:visibility="invisible"
                 android:layout_toLeftOf="@id/createGrid_SettingsButton"
                 style="@style/infoButton"/>
 
