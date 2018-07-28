@@ -41,7 +41,7 @@ public class CoverArtAdapter extends RecyclerView.Adapter<CoverArtAdapter.ViewHo
     // find unknown     findingAll=true, findingUnknown=true
     private boolean findingAll = false;
     private boolean findingUnknown = false;
-    private int findingAllIndex;            // index of the album we are findin art for when finding ALL
+    private int findingAllIndex;            // index of the album we are finding art for when finding ALL
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView artistName;

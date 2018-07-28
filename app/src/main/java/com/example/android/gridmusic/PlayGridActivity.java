@@ -20,11 +20,20 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import android.widget.TextView;
 import android.os.Handler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 // contains all code for playing a Grid
@@ -35,10 +44,10 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     private Song currentSong;
 
     // stats for hardcoded grid for prototype
-    private int numGridCols = 6;                // how many columns widde is the Grid?
+    private int numGridCols;                // how many columns widde is the Grid?
     private int numGridElems;                   // total elements in the grid, including blank grids
-    private int numPlayable = 33;               // number of non-blank grids
-    private int numNotPlayed = numPlayable;     // how many grids have not been played yet?
+    private int numPlayable;               // number of non-blank grids
+    private int numNotPlayed;     // how many grids have not been played yet?
 
     private Handler handler = new Handler();
     private MediaPlayer mediaPlayer;
@@ -115,12 +124,91 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     private void initGridArray() {
         GridElement grid;
 
-        GridElement blankGrid = new GridElement(-1);
+        GridElement blankGrid = new GridElement(getResources().getString(R.string.gridBlank), true);
 
+        String readData = loadGrid(getFirstSaveFile());
+
+        JSONObject gridInput;
+        try {
+            gridInput = new JSONObject(readData);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        int rows;
+
+        try {
+            rows = gridInput.getInt(getResources().getString(R.string.savelabelRows));
+            numGridCols = gridInput.getInt(getResources().getString(R.string.savelabelColumns));
+
+            JSONArray gridArray = gridInput.getJSONArray(getResources().getString(R.string.savelabelGrids));
+
+            if (gridArray.length() == 0) {
+                Log.e("ERROR", "PlayGridActivity:initGridArray() json grid array length is 0");
+                return;
+            }
+
+            numNotPlayed = numPlayable = gridArray.length();
+            int gridArrayIndex = 0;
+            JSONObject jsonGrid = gridArray.getJSONObject(gridArrayIndex);
+            int gRow = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsRow));
+            int gCol = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsColumn));
+
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < numGridCols; j++) {
+                    if ((i != gRow) || (j != gCol)) {
+                        theGrid.add(blankGrid);
+                    } else {
+                        theGrid.add(new GridElement(jsonGrid.getString(getResources().getString(R.string.savelabelGridsCoverart)), false));
+                        grid = theGrid.get(theGrid.size() - 1);
+
+                        JSONArray songArray = jsonGrid.getJSONArray(getResources().getString(R.string.savelabelGridsSongs));
+                        for (int s = 0; s < songArray.length(); s++) {
+                            JSONObject jsonSong = songArray.getJSONObject(s);
+
+                            // TODO hack to skip over storage path which seems to prevent playing of the music file
+                            String path = jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsFilepath));
+                            String skip = "/storage/emulated/0";
+                            path = path.substring(skip.length(), path.length());
+
+                            grid.addSong(jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsName)),
+                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsArtist)),
+                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsAlbum)),
+                                    path,
+                                    jsonSong.getInt(getResources().getString(R.string.savelabelGridsSongsTrack)),
+                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsAlbumID)));
+                        }
+
+                        gridArrayIndex++;
+                        if (gridArrayIndex < gridArray.length()) {
+                            jsonGrid = gridArray.getJSONObject(gridArrayIndex);
+                            gRow = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsRow));
+                            gCol = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsColumn));
+                        } else {
+                            gRow = gCol = -1;
+                        }
+                    }
+                }
+            }
+
+        } catch (JSONException e) {
+            Log.e("ERROR", "JSON EXCEPTION");
+            e.printStackTrace();
+            return;
+        }
+
+
+
+
+
+
+        /*
         // row 0
         theGrid.add(blankGrid);
         theGrid.add(blankGrid);
         theGrid.add(blankGrid);
+
 
         theGrid.add(new GridElement(R.drawable.born_in_the_usa));
         grid = theGrid.get(theGrid.size() - 1);
@@ -391,6 +479,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         theGrid.add(blankGrid);
         theGrid.add(blankGrid);
         theGrid.add(blankGrid);
+        */
 
         numGridElems = theGrid.size();
     }
@@ -543,6 +632,9 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
                                                                             break;
 
                             case (R.id.playGridDrawer_ResetPlayedGrids) :   resetGrids(true);
+                                                                            break;
+
+                            case (R.id.playGridDrawer_LoadGrid) :           loadGrid(getFirstSaveFile());
                                                                             break;
 
                             default :                                       GeneralTools.notSupported(PlayGridActivity.this);
@@ -1072,13 +1164,15 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     // boolean notify allows us to suppress per-grid adapter notifications in
     // case we are updating a lot of grids, i.e. resetGrids()
     private void setGridColor(GridElement grid, int color, boolean notify) {
+        int position = theGrid.indexOf(grid);
+
         // if a color was specified, set grid to that color
         if (color != CURR_STATE_COLOR) {
             grid.bgColor = color;
             grid.filterColor = color;
 
             if (notify) {
-                gridAdapter.notifyDataSetChanged();
+                gridAdapter.notifyItemChanged(position);
             }
 
             return;
@@ -1097,7 +1191,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         }
 
         if (notify) {
-            gridAdapter.notifyDataSetChanged();
+            gridAdapter.notifyItemChanged(position);
         }
     }
 
@@ -1116,5 +1210,66 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
                 }
             }
         };
+    }
+
+    private String getFirstSaveFile() {
+        String[] files = listSaveFiles();
+
+        for (String file : files) {
+            Log.e("FILE", file);
+        }
+
+        if (files.length > 0) {
+            return files[0];
+        } else {
+            return null;
+        }
+    }
+
+    private String loadGrid(String filename) {
+        if (filename == null) {
+            Log.e("ERROR", "PlayGridActivity:loadGrid received null filename");
+            return null;
+        }
+
+        GeneralTools.showToast(this, "Loading...");
+
+        return readSaveFile(filename);
+    }
+
+    private String readSaveFile(String filename) {
+        String inData = null;
+
+        try {
+            FileInputStream inputStream = openFileInput(filename);
+            int size = inputStream.available();
+
+            byte[] buffer = new byte[size];
+
+            int sizeRead = inputStream.read(buffer);
+            if (sizeRead != size) {
+                Log.e("ERROOR", "PlayGridActivity:readSaveFile read " + sizeRead + " out of " + size + " bytes");
+            }
+
+            inputStream.close();
+
+            inData = new String(buffer, "UTF-8");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (inData != null) {
+            Log.e("INDATA", inData);
+        }
+
+        return inData;
+    }
+
+    private String[] listSaveFiles() {
+        return this.fileList();
     }
 }

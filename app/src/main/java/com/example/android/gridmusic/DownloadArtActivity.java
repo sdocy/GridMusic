@@ -131,7 +131,7 @@ public class DownloadArtActivity extends AppCompatActivity implements LoaderMana
         backArrowButton.setOnClickListener(downLoadArtListener);
     }
 
-    // intiate auto-find for all albums
+    // initiate auto-find for all albums
     public void findAllArt(View v) {
         if (findingArt) {
             // let current auto-find complete
@@ -147,7 +147,7 @@ public class DownloadArtActivity extends AppCompatActivity implements LoaderMana
         }
     }
 
-    // intiate auto-find for albums with no cover art on this device
+    // initiate auto-find for albums with no cover art on this device
     public void findUnknownArt(View v) {
         if (findingArt) {
             // let current auto-find complete

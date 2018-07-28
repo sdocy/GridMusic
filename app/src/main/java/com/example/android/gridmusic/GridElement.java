@@ -9,12 +9,17 @@ import java.util.Random;
 // data and methods for an individual cell in the Grid (generally referred to as a grid, with lower-case `g`)
 public class GridElement {
 
-    int imageResourceId;            // grid image
     boolean played = false;         // has this grid been played?
     int bgColor;                    // provides a border around the grid image
     int filterColor;                // filter color for different grid states
-    String albumArtPath = null;
+    String albumArtPath;
+    private boolean isEmptyGrid;
 
+    // used when saving and loading grids
+    public int gridRow;
+    public int gridCol;
+
+    int position = -1;              // position of the grid in the Grid
     boolean hasSongError;
 
     public List<Song> songList;       // list of songs
@@ -24,17 +29,19 @@ public class GridElement {
     private Random songRNG;             // for returning a random song from this grid
 
     // int imageR - image resource id
-    GridElement(int imageR) {
-        imageResourceId = imageR;
+    GridElement(String artPath, boolean specialGrid) {
+        albumArtPath = artPath;
         hasSongError = false;
         songList = new ArrayList<>();
         songRNG = new Random();
 
-        if (imageR < 0) {
+        if (specialGrid) {
             bgColor = R.color.borderEmptyGrid;
+            isEmptyGrid = true;
         } else {
             bgColor = R.color.borderNotPlayed;
             filterColor = R.color.filterNotPlayed;
+            isEmptyGrid = false;
         }
     }
 
@@ -121,7 +128,7 @@ public class GridElement {
 
     // see if this is a blank or empty grid
     public boolean isEmpty() {
-        return (imageResourceId < 0 );
+        return (isEmptyGrid);
     }
 
     public int numSongs() {

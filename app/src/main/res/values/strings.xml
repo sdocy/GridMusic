@@ -12,6 +12,11 @@
     <string name="musicGrid">music grid</string>
     <string name="gridsTag" formatted="false">grids: %1$d</string>
 
+    <!-- special grid identifiers -->
+    <string name="gridBlank">grid_blank</string>
+    <string name="gridEmpty">grid_empty</string>
+    <string name="gridUnknown">grid_unknown</string>
+
     <!-- playGrid music controls -->
     <string name="skip_rewind">skip_rewind</string>
     <string name="rewind">rewind</string>
@@ -29,6 +34,7 @@
     <string name="allSongs">Play all songs on each grid.</string>
     <string name="notSupported">This feature is not available in the trial version.</string>
     <string name="information">information</string>
+    <string name="loadGrid">Load Grid</string>
 
     <!-- daily playGrid tips -->
     <string name="tip">Tip :</string>
@@ -74,6 +80,7 @@
     <string name="noDelete">No songs have been deleted.</string>
     <string name="combineByArtist">Combine grids by artist</string>
     <string name="combineByAlbum">Combine grids by album</string>
+    <string name="saveGrid">Save Grid</string>
 
     <!-- Download Art buttons and info msgs -->
     <string name="findAllArt">Find all\ncover art</string>
@@ -84,4 +91,21 @@
     <string name="noMusic">No music found.</string>
     <string name="coverArt">Cover Art</string>
     <string name="coversDownloaded" formatted="false">%1$d cover(s) downloaded</string>
+
+    <!-- save data json labels -->
+    <string name="savelabelName">Name</string>
+    <string name="savelabelRows">Rows</string>
+    <string name="savelabelColumns">Columns</string>
+    <string name="savelabelGrids">Grids</string>
+    <string name="savelabelGridsRow">Row</string>
+    <string name="savelabelGridsColumn">Column</string>
+    <string name="savelabelGridsCoverart">Coverart</string>
+    <string name="savelabelGridsSongs">Songs</string>
+    <string name="savelabelGridsSongsName">Name</string>
+    <string name="savelabelGridsSongsArtist">Artist</string>
+    <string name="savelabelGridsSongsAlbum">Album</string>
+    <string name="savelabelGridsSongsTrack">Track</string>
+    <string name="savelabelGridsSongsAlbumID">AlbumID</string>
+    <string name="savelabelGridsSongsFilepath">Filepath</string>
+
 </resources>

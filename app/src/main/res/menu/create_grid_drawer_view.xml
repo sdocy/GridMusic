@@ -19,4 +19,11 @@
             android:id="@+id/createGridDrawer_CombineGridsByAlbum"
             android:title="@string/combineByAlbum" />
     </group>
+
+    <group android:id="@+id/createGridDrawer_SaveGroup"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/createGridDrawer_SaveGrid"
+            android:title="@string/saveGrid" />
+    </group>
 </menu>

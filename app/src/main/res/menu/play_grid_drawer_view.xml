@@ -19,4 +19,11 @@
             android:id="@+id/playGridDrawer_ResetPlayedGrids"
             android:title="@string/resetPlayed" />
     </group>
+
+    <group android:id="@+id/playGridDrawer_LoadGridGroup"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/playGridDrawer_LoadGrid"
+            android:title="@string/loadGrid" />
+    </group>
 </menu>

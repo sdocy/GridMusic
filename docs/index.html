@@ -311,14 +311,39 @@
 
 <div>
 	<div class="text-left indentleft">
+		<p><br/><br/>Version 5.0 July 28, 2018</p>
+		<ul>
+			<li>Implemented save grid functionality in Create Grid activity and load grid functionality in Play Grid Activity</li>
+			<ul>
+				<li>Save data is converted to JSON and written as a string to a save file</li>
+				<li>Play Grid reads in the save file and retrieves the specific JSON values</li>
+				<li>Had to switch GridElement from using drawable resources to exclusively converting a filepath to a bitmap</li>
+				<li>Removed hardcoded grid initialization in Play Grid and all the drawable resources associated with it</li>
+			</ul>
+		</ul>
+		<p>Save grid TODO</p>
+		<ul>
+			<li>Only a single save file is currently implemented, need to implement an interface to choose save file name or to
+				overwrite an existing save file and to list existing save files for the play to choose from when loading</li>
+			<li>Investigate caching cover art bitmaps so we don't have to constantly read the cover art file</li>
+			<li>Check available space on device before trying to save the file</li>
+			<li>Investigate save file size for large Grids, to make sure it is acceptable</li>
+			<li>Research other Android save file best practices</li>
+			<li>Investigate current hack of removing storage part of music path name in order to get music file to play</li>
+		</ul>
+	</div>
+</div>
+
+<div>
+	<div class="text-left indentleft">
 		<p><br/><br/>TODO<br/></p>
 					
 		<ul>
 			<li>In single play mode, if a user selects a grid, we skip that grid if all songs from it have already been played, perhaps we
 				should reset all songs to not played in this case and then choose a random one?</li>
+			<li>Figure out how to replace existing or missing cover art with downloaded cover art</li>
 			<li>New feature - play all songs on a grid, in random order</li>
 			<li>Get rewind and fast-forward working</li>
-			<li>See how to save and load Grids on device</li>
 			<li>Go through the guides I found for building Android Audio Players</li>
 			<li>Go back and retry supporting different grid sizes</li>
 			<li>Replace implementing onClickListener with just creating an onClickListener that includes a switch statement for use by

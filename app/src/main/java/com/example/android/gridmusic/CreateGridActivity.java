@@ -1,6 +1,7 @@
 package com.example.android.gridmusic;
 
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -22,6 +23,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -79,6 +84,9 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
     // grid details list
     private GridDetailsAdapter gridDetailsAdapter;    // view adapter for the Grid
+
+    private int saveGridNumRows;
+    private int saveGridNumCols;
 
     // view refs
     private TextView infoViewText;
@@ -155,7 +163,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
     // create the Grid and fill it with empty grids
     private void initGridArray() {
-        emptyGrid = new GridElement(-2);
+        emptyGrid = new GridElement(getResources().getString(R.string.gridEmpty), true);
 
         // fill in the Grid with blank grids
         for (int i = 0; i < (GRID_CREATE_NUM_COLS * GRID_CREATE_NUM_ROWS); i++) {
@@ -228,10 +236,10 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                         switch (menuItem.getItemId()) {
-                            case R.id.createGridDrawer_UndeleteLast :    undeleteLast();
+                            case R.id.createGridDrawer_UndeleteLast :           undeleteLast();
                                 break;
 
-                            case R.id.createGridDrawer_UndeleteAll :     undeleteAll();
+                            case R.id.createGridDrawer_UndeleteAll :            undeleteAll();
                                 break;
 
                             case R.id.createGridDrawer_CombineGridsByArtist :   combineGrids(combineType.artist);
@@ -240,7 +248,10 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
                             case R.id.createGridDrawer_CombineGridsByAlbum :    combineGrids(combineType.album);
                                 break;
 
-                            default :                                       GeneralTools.notSupported(CreateGridActivity.this);
+                            case R.id.createGridDrawer_SaveGrid :               saveGrid();
+                                break;
+
+                            default :                                           GeneralTools.notSupported(CreateGridActivity.this);
                         }
 
                         // close drawer when item is tapped
@@ -397,7 +408,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
                 continue;
             }
 
-            if (dupeGrid(g1, g2)) {
+            if (isDupeGrid(g1, g2)) {
                 toRemove.add(g1);
             }
         }
@@ -409,7 +420,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     }
 
     // are two grids duplicates...identical artist name, album name and track number?
-    private boolean dupeGrid(GridElement a, GridElement b) {
+    private boolean isDupeGrid(GridElement a, GridElement b) {
         Song s1 = a.getNthSong(0);
         Song s2 = b.getNthSong(0);
 
@@ -431,12 +442,13 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         if (currGridListIndex != -1) {
             gridList.get(currGridListIndex).filterColor = R.color.filterNotPlayed;
+            gridListAdapter.notifyItemChanged(currGridListIndex);
         }
 
         if (currGridListIndex == position) {
             // user re-clicked the same grid, deselect it
             currGridListIndex = -1;
-            gridListAdapter.notifyDataSetChanged();
+            gridListAdapter.notifyItemChanged(position);
 
             gridDetailsAdapter.turnOffDetails();
 
@@ -447,7 +459,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         currGridListIndex = position;
         GridElement clickedGrid = gridList.get(position);
-        gridListAdapter.notifyDataSetChanged();
+        gridListAdapter.notifyItemChanged(position);
         clickedGrid.filterColor = R.color.filterNextToPlay;
         showGridInfo(clickedGrid);
         infoViewText.setText(getString(R.string.numSongs, clickedGrid.songList.size()));
@@ -495,7 +507,8 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         theGrid.set(position, gridList.get(currGridListIndex));
         theGrid.get(position).filterColor = R.color.filterNotPlayed;
-        gridAdapter.notifyDataSetChanged();
+        theGrid.get(position).position = position;
+        gridAdapter.notifyItemChanged(position);
 
         removeGridListItem(currGridListIndex);
 
@@ -508,6 +521,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     private void reset_currGridListIndex() {
         if (currGridListIndex != -1) {
             gridList.get(currGridListIndex).filterColor = R.color.filterNotPlayed;
+            gridListAdapter.notifyItemChanged(currGridListIndex);
         }
         currGridListIndex = -1;
 
@@ -557,10 +571,133 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         insertGridListItem(clickedGrid);
 
         theGrid.set(position, emptyGrid);
-        gridAdapter.notifyDataSetChanged();
+        gridAdapter.notifyItemChanged(position);
 
         infoViewText.setText(R.string.gridRemoved);
     }
+
+    private void saveGrid() {
+        GeneralTools.showToast(this, "Saving...");
+
+        List<GridElement> toSave = createSaveList();
+
+        JSONObject saveData = listToJson(toSave);
+
+        Log.e("ERROR", saveData.toString());
+        writeSaveFile(saveData, "savedGrid");
+    }
+
+    // find all non-empty grids and compute the bounds of the matrix to hold them
+    private List<GridElement> createSaveList() {
+        List<GridElement> saveGrid = new ArrayList<>();
+        int maxRow = -1, minRow = GRID_CREATE_NUM_ROWS;
+        int maxCol = -1, minCol = GRID_CREATE_NUM_COLS;
+
+        for (int i = 0; i < theGrid.size(); i++) {
+            GridElement g = theGrid.get(i);
+            if (g.isEmpty()) {
+                continue;
+            }
+
+            int row = i / GRID_CREATE_NUM_COLS;
+            int col = i % GRID_CREATE_NUM_COLS;
+
+            if (row < minRow) {
+                minRow = row;
+            }
+
+            if (row > maxRow) {
+                maxRow = row;
+            }
+
+            if (col < minCol) {
+                minCol = col;
+            }
+
+            if (col > maxCol) {
+                maxCol = col;
+            }
+
+            g.gridRow = row;
+            g.gridCol = col;
+
+            saveGrid.add(g);
+        }
+
+        saveGridNumRows = maxRow - minRow + 1;
+        saveGridNumCols = maxCol - minCol + 1;
+
+        // Transform grid coords to smaller matrix.
+        // We have to do this after reading the entire grid because we
+        // don't know minCol until we have read the entire grid.
+        transformCoords(minRow, minCol, saveGrid);
+
+        return saveGrid;
+    }
+
+    // Transform a grid's position in the larger (20 x 20) create grid matrix, to
+    // the smaller save grid matrix by subtracting out the origin position of the
+    // save grid matrix.
+    private void transformCoords(int x, int y, List<GridElement> dataList) {
+        for (GridElement grid : dataList) {
+            grid.gridRow -= x;
+            grid.gridCol -= y;
+        }
+    }
+
+    private JSONObject listToJson(List<GridElement> dataList) {
+        JSONObject obj = new JSONObject();
+
+        try {
+            obj.put(getResources().getString(R.string.savelabelName), "savedGrid");
+            obj.put(getResources().getString(R.string.savelabelRows), saveGridNumRows);
+            obj.put(getResources().getString(R.string.savelabelColumns), saveGridNumCols);
+
+            JSONArray grids = new JSONArray();
+            for (GridElement grid : dataList) {
+                JSONObject jsonGrid = new JSONObject();
+                jsonGrid.put(getResources().getString(R.string.savelabelGridsRow), grid.gridRow);
+                jsonGrid.put(getResources().getString(R.string.savelabelGridsColumn), grid.gridCol);
+                jsonGrid.put(getResources().getString(R.string.savelabelGridsCoverart), grid.albumArtPath);
+
+                JSONArray songs = new JSONArray();
+                for (Song song : grid.songList) {
+                    JSONObject jsonSong = new JSONObject();
+                    jsonSong.put(getResources().getString(R.string.savelabelGridsSongsName), song.songName);
+                    jsonSong.put(getResources().getString(R.string.savelabelGridsSongsArtist), song.artistName);
+                    jsonSong.put(getResources().getString(R.string.savelabelGridsSongsAlbum), song.albumName);
+                    jsonSong.put(getResources().getString(R.string.savelabelGridsSongsTrack), song.trackNumber);
+                    jsonSong.put(getResources().getString(R.string.savelabelGridsSongsAlbumID), song.albumID);
+                    jsonSong.put(getResources().getString(R.string.savelabelGridsSongsFilepath), song.filePath);
+
+                    songs.put(jsonSong);
+                }
+                jsonGrid.put(getResources().getString(R.string.savelabelGridsSongs), songs);
+
+                grids.put(jsonGrid);
+            }
+            obj.put(getResources().getString(R.string.savelabelGrids), grids);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return obj;
+    }
+
+    private void writeSaveFile(JSONObject obj, String filename) {
+        FileOutputStream outputStream;
+        String output = obj.toString();
+
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(output.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -588,7 +725,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
             //Log.e("GET_SONGS", cursor.getString(0) + "||" + cursor.getString(1) + "||" + cursor.getString(2)
             //        + "||" +  cursor.getString(3) + "||" + cursor.getString(4) + "||" + cursor.getString(5));
 
-            gridList.add(new GridElement(R.drawable.unknown));
+            gridList.add(new GridElement(getResources().getString(R.string.gridUnknown), false));
             GridElement grid = gridList.get(gridList.size() - 1);
 
             // songName, artistName, albumName, filePath, trackNumber, albumID

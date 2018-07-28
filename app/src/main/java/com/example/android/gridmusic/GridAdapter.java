@@ -63,23 +63,20 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
             throw new AssertionError("GridAdapter.getView() : null currentElem");
         }
 
-        if (currentElem.imageResourceId == -1) {
+        if (currentElem.albumArtPath.equals(myContext.getResources().getString(R.string.gridBlank))) {
             // blank
             holder.gridImage.setImageDrawable(null);
-        } else if (currentElem.imageResourceId == -2) {
+        } else if (currentElem.albumArtPath.equals(myContext.getResources().getString(R.string.gridEmpty))) {
             // empty grid outline
             holder.gridImage.setImageResource(R.drawable.emptygrid);
+        } else if (currentElem.albumArtPath.equals(myContext.getResources().getString(R.string.gridUnknown))) {
+            // unknown cover art
+            holder.gridImage.setImageResource(R.drawable.unknown);
         } else {
-            // filled grid
-            if (currentElem.albumArtPath != null) {
-                // this is how we do it in CreateGrid, and eventually PlayGrid
-                Bitmap bm = BitmapFactory.decodeFile(currentElem.albumArtPath);
-                holder.gridImage.setImageBitmap(bm);
-            } else {
-                // this is how we currently do it in PlayGrid
-                // we also use this for unknown album art, and will continue to do so
-                holder.gridImage.setImageResource(currentElem.imageResourceId);
-            }
+            // filled grid with cover art
+            Bitmap bm = BitmapFactory.decodeFile(currentElem.albumArtPath);
+            holder.gridImage.setImageBitmap(bm);
+
             holder.gridImage.setColorFilter(myContext.getResources().getColor(currentElem.filterColor));
         }
         holder.gridImage.setBackgroundColor(myContext.getResources().getColor(currentElem.bgColor));
@@ -90,50 +87,4 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
     public int getItemCount() {
         return gridList.size();
     }
-/*
-    @NonNull
-    @Override
-    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-        ViewHolder holder;
-        View listItem = convertView;
-        if(listItem == null) {
-            listItem = LayoutInflater.from(myContext).inflate(R.layout.grid_element, parent, false);
-
-            holder = new  ViewHolder();
-            holder.gridImage = listItem.findViewById(R.id.gridElement_GridImage);
-
-            listItem.setTag(holder);
-        } else {
-            // recycled view, get existing ViewHolder
-            holder = (ViewHolder) listItem.getTag();
-        }
-
-        GridElement currentElem = getItem(position);
-        if (currentElem == null) {
-            throw new AssertionError("GridAdapter.getView() : null currentElem");
-        }
-
-        if (currentElem.imageResourceId == -1) {
-            // blank
-            holder.gridImage.setImageDrawable(null);
-        } else if (currentElem.imageResourceId == -2) {
-            // empty grid outline
-            holder.gridImage.setImageResource(R.drawable.emptygrid);
-        } else {
-            // filled grid
-            if (currentElem.albumArtPath != null) {
-                // this is how we do it in CreateGrid, and eventually PlayGrid
-                Bitmap bm = BitmapFactory.decodeFile(currentElem.albumArtPath);
-                holder.gridImage.setImageBitmap(bm);
-            } else {
-                // this is how we currently do it in PlayGrid
-                // we also use this for unknown album art, and will continue to do so
-                holder.gridImage.setImageResource(currentElem.imageResourceId);
-            }
-            holder.gridImage.setColorFilter(myContext.getResources().getColor(currentElem.filterColor));
-        }
-        holder.gridImage.setBackgroundColor(myContext.getResources().getColor(currentElem.bgColor));
-
-        return listItem;
-    }*/
 }

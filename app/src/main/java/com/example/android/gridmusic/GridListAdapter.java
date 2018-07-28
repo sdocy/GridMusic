@@ -66,12 +66,12 @@ public class GridListAdapter extends RecyclerView.Adapter<GridListAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         GridElement currentElem = albumList.get(position);
 
-        if (currentElem.albumArtPath != null) {
+        if (!(currentElem.albumArtPath.equals(myContext.getResources().getString(R.string.gridUnknown)))) {
             Bitmap bm = BitmapFactory.decodeFile(currentElem.albumArtPath);
             holder.coverArt.setImageBitmap(bm);
         } else {
             // this is used for unknown album art
-            holder.coverArt.setImageResource(currentElem.imageResourceId);
+            holder.coverArt.setImageResource(R.drawable.unknown);
         }
 
         holder.coverArt.setColorFilter(myContext.getResources().getColor(currentElem.filterColor));
