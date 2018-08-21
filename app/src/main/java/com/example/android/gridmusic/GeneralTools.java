@@ -47,6 +47,11 @@ public class GeneralTools {
         showToast(context, context.getString(R.string.notSupported));
     }
 
+    // list all save files
+    public static String[] listSaveFiles(Context context) {
+        return context.fileList();
+    }
+
     // briefly highlight text in a TextView
     public static void flashText(Context context, TextView v, int highlightColor, int origColor, int delay) {
         Handler handler = new Handler();

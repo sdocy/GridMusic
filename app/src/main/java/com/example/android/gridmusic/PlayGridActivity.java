@@ -20,7 +20,6 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,9 +27,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.os.Handler;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,11 +42,10 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
 
     private Song currentSong;
 
-    // stats for hardcoded grid for prototype
-    private int numGridCols;                // how many columns widde is the Grid?
-    private int numGridElems;                   // total elements in the grid, including blank grids
-    private int numPlayable;               // number of non-blank grids
-    private int numNotPlayed;     // how many grids have not been played yet?
+    private int numGridCols;             // how many columns widde is the Grid?
+    private int numGridElems;            // total elements in the grid, including blank grids
+    private int numPlayable;             // number of non-blank grids
+    private int numNotPlayed;            // how many grids have not been played yet?
 
     private Handler handler = new Handler();
     private MediaPlayer mediaPlayer;
@@ -62,7 +60,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     private int prevGridIndex = -1;         // grid we played last time
     private int currGridIndex = -1;         // grid we are playing now, or have just chosen to play
     private int nextGridIndex = -1;         // grid to play next
-    private int playEntireGridIndex = -1;              // when playing entire grids, this stores the track we are currently playing
+    private int playEntireGridIndex = -1;   // when playing entire grids, this stores the track we are currently playing
 
     // music control and display
     private boolean playingMusic = false;   // has user pressed play?
@@ -75,9 +73,6 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     private TextView playSongText;                  // shows title of song being played
 
     private ImageView backArrowButton;              // go back to main menu
-
-
-
     private ImageView optionsButton;               // open options layout
     private NavigationView optionsDrawer;
     private DrawerLayout optionsDrawerLayout;
@@ -88,6 +83,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
 
     // the Grid
     private List<GridElement> theGrid = new ArrayList<>();
+    private String saveFileCurrentlyLoaded;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +95,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
 
         initMisc();
 
-        initGridArray();
+        initGrid();
 
         initAdapters();
 
@@ -118,370 +114,8 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     }
 
     // setup the Grid
-    // -1 is a blank (empty) grid
-    // The strings here have not been put into `strings.xml` since, in the final app
-    // version, they would be retrieved from a grid configuration file.
-    private void initGridArray() {
-        GridElement grid;
-
-        GridElement blankGrid = new GridElement(getResources().getString(R.string.gridBlank), true);
-
-        String readData = loadGrid(getFirstSaveFile());
-
-        JSONObject gridInput;
-        try {
-            gridInput = new JSONObject(readData);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        int rows;
-
-        try {
-            rows = gridInput.getInt(getResources().getString(R.string.savelabelRows));
-            numGridCols = gridInput.getInt(getResources().getString(R.string.savelabelColumns));
-
-            JSONArray gridArray = gridInput.getJSONArray(getResources().getString(R.string.savelabelGrids));
-
-            if (gridArray.length() == 0) {
-                Log.e("ERROR", "PlayGridActivity:initGridArray() json grid array length is 0");
-                return;
-            }
-
-            numNotPlayed = numPlayable = gridArray.length();
-            int gridArrayIndex = 0;
-            JSONObject jsonGrid = gridArray.getJSONObject(gridArrayIndex);
-            int gRow = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsRow));
-            int gCol = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsColumn));
-
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < numGridCols; j++) {
-                    if ((i != gRow) || (j != gCol)) {
-                        theGrid.add(blankGrid);
-                    } else {
-                        theGrid.add(new GridElement(jsonGrid.getString(getResources().getString(R.string.savelabelGridsCoverart)), false));
-                        grid = theGrid.get(theGrid.size() - 1);
-
-                        JSONArray songArray = jsonGrid.getJSONArray(getResources().getString(R.string.savelabelGridsSongs));
-                        for (int s = 0; s < songArray.length(); s++) {
-                            JSONObject jsonSong = songArray.getJSONObject(s);
-
-                            // TODO hack to skip over storage path which seems to prevent playing of the music file
-                            String path = jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsFilepath));
-                            String skip = "/storage/emulated/0";
-                            path = path.substring(skip.length(), path.length());
-
-                            grid.addSong(jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsName)),
-                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsArtist)),
-                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsAlbum)),
-                                    path,
-                                    jsonSong.getInt(getResources().getString(R.string.savelabelGridsSongsTrack)),
-                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsAlbumID)));
-                        }
-
-                        gridArrayIndex++;
-                        if (gridArrayIndex < gridArray.length()) {
-                            jsonGrid = gridArray.getJSONObject(gridArrayIndex);
-                            gRow = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsRow));
-                            gCol = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsColumn));
-                        } else {
-                            gRow = gCol = -1;
-                        }
-                    }
-                }
-            }
-
-        } catch (JSONException e) {
-            Log.e("ERROR", "JSON EXCEPTION");
-            e.printStackTrace();
-            return;
-        }
-
-
-
-
-
-
-        /*
-        // row 0
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-
-        theGrid.add(new GridElement(R.drawable.born_in_the_usa));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("I'm On Fire", "Bruce Springsteen", "some album", "/Music/im_on_fire.m4a", 1, "test");
-        grid.addSong("Bobby Jean", "Bruce Springsteen", "some album", "/Music/bobby_jean.m4a", 1, "test");
-        grid.addSong("Glory Days", "Bruce Springsteen", "some album", "/Music/glory_days.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.very_best_of_the_eagles));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Desperado", "Eagles", "some album", "/Music/desperado.m4a", 1, "test");
-        grid.addSong("Tequila Sunrise", "Eagles", "some album", "/Music/tequila_sunrise.m4a", 1, "test");
-        grid.addSong("Hotel California", "Eagles", "some album", "/Music/hotel_california.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-
-
-        // row 1
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.elton_john_greatest_hits));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Daniel", "Elton John", "some album", "/Music/daniel.m4a", 1, "test");
-        grid.addSong("Rocket Man", "Elton John", "some album", "/Music/rocket_man.m4a", 1, "test");
-        grid.addSong("Candle In The Wind", "Elton John", "some album", "/Music/candle_in_the_wind.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.abbey_road));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Maxwell's Silver Hammer", "Beatles", "some album", "/Music/maxwells_silver_hammer.m4a", 1, "test");
-        grid.addSong("You Never Give Me Your Money", "Beatles", "some album", "/Music/you_never_give_me_your_money.m4a", 1, "test");
-        grid.addSong("She Came In Through The Bathroom Window", "Beatles", "some album", "/Music/she_came_in_through_the_bathroom.m4a", 1, "test");
-
-
-        // row 2
-        theGrid.add(new GridElement(R.drawable.fifty_one_fifty));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Dreams", "Van Halen", "some album", "/Music/dreams.m4a", 1, "test");
-        grid.addSong("Summer Nights", "Van Halen", "some album", "/Music/summer_nights.m4a", 1, "test");
-        grid.addSong("Inside", "Van Halen", "some album", "/Music/inside.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.van_halen));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Runnin' With The Devil", "Van Halen", "some album", "/Music/runnin_with_the_devil.m4a", 1, "test");
-        grid.addSong("Jamie's Cryin'", "Van Halen", "some album", "/Music/jamies_cryin.m4a", 1, "test");
-        grid.addSong("Ice Cream Man", "Van Halen", "some album", "/Music/ice_cream_man.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.fleetwood_mac_greatest_hits));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Go Your Own Way", "Fleetwood Mac", "some album", "/Music/go_your_own_way.mp3", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.best_of_david_bowie));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Space Oddity", "David Bowie", "some album", "/Music/space_oddity.m4a", 1, "test");
-        grid.addSong("Ziggy Stardust", "David Bowie", "some album", "/Music/ziggy_stardust.m4a", 1, "test");
-        grid.addSong("Life On Mars", "David Bowie", "some album", "/Music/life_on_mars.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-
-
-        // row 3
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.synchronicity));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Synchronicity II", "Police", "some album", "/Music/synchronicity_ii.m4a", 1, "test");
-        grid.addSong("Every Breath You Take", "Police", "some album", "/Music/every_breath_you_take.m4a", 1, "test");
-        grid.addSong("King Of Pain", "Police", "some album", "/Music/king_of_pain.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.point_of_know_return));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Point Of Know Return", "Kansas", "some album", "/Music/point_of_know_return.m4a", 1, "test");
-        grid.addSong("Dust In The Wind", "Kansas", "some album", "/Music/dust_in_the_wind.m4a", 1, "test");
-        grid.addSong("Nobody's Home", "Kansas", "some album", "/Music/nobodys_home.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-
-        // row 4
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.genesis));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Mama", "Genesis", "some album", "/Music/mama.m4a", 1, "test");
-        grid.addSong("Home By The Sea", "Genesis", "some album", "/Music/home_by_the_sea.m4a", 1, "test");
-        grid.addSong("Second Home By The Sea", "Genesis", "some album", "/Music/second_home_by_the_sea.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.selling_england_by_the_pound));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Dancing With The Moonlight Knight", "Genesis", "some album", "/Music/dancing_with_the_moonlight_knight.m4a", 1, "test");
-        grid.addSong("More Fool Me", "Genesis", "some album", "/Music/more_fool_me.m4a", 1, "test");
-        grid.addSong("The Cinema Show", "Genesis", "some album", "/Music/the_cinema_show.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.best_of_emerson_lake_and_palmer));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Fanfare For The Common Man", "Emerson, Lake and Palmer", "some album", "/Music/fanfare_for_the_common_man.m4a", 1, "test");
-        grid.addSong("C'est La Vie", "Emerson, Lake and Palmer", "some album", "/Music/cest_la_vie.m4a", 1, "test");
-        grid.addSong("Lucky Man", "Emerson, Lake and Palmer", "some album", "/Music/lucky_man.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.chronicles));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Tom Sawyer", "Rush", "some album", "/Music/tom_sawyer.m4a", 1, "test");
-        grid.addSong("Subdivisions", "Rush", "some album", "/Music/subdivisions.m4a", 1, "test");
-        grid.addSong("Time Stands Still", "Rush", "some album", "/Music/time_stand_still.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.the_who_greatest_hits));
-        grid = theGrid.get(theGrid.size() - 1);
-        // TODO misspelled these song names to introduce an access error
-        grid.addSong("Love Reign O'er Me", "The Who", "some album", "/Music/llove_reign_oer_me.mp3", 1, "test");
-        grid.addSong("Eminence Front", "The Who", "some album", "/Music/eeminence_front.mp3", 1, "test");
-
-
-        // row 5
-        theGrid.add(new GridElement(R.drawable.led_zeppelin_iii));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Since I've Been Loving You", "Led Zeppelin", "some album", "/Music/since_ive_been_loving_you.m4a", 1, "test");
-        grid.addSong("Gallows Pole", "Led Zeppelin", "some album", "/Music/gallows_pole.m4a", 1, "test");
-        grid.addSong("That's The Way", "Led Zeppelin", "some album", "/Music/thats_the_way.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.a_trick_of_the_tail));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Mad Man Moon", "Genesis", "some album", "/Music/mad_man_moon.m4a", 1, "test");
-        grid.addSong("Ripples", "Genesis", "some album", "/Music/ripples.m4a", 1, "test");
-        grid.addSong("A Trick Of The Tail", "Genesis", "some album", "/Music/a_trick_of_the_tail.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.highlights));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Starship Trooper", "Yes", "some album", "/Music/starship_trooper.m4a", 1, "test");
-        grid.addSong("I've Seen All Good People", "Yes", "some album", "/Music/ive_seen_all_good_people.m4a", 1, "test");
-        grid.addSong("Wondrous Stories", "Yes", "some album", "/Music/wondrous_stories.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.boston));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("More Than A Feeling", "Boston", "some album", "/Music/more_than_a_feeling.m4a", 1, "test");
-        grid.addSong("Peace Of Mind", "Boston", "some album", "/Music/peace_of_mind.m4a", 1, "test");
-        grid.addSong("Hitch A Ride", "Boston", "some album", "/Music/hitch_a_ride.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-
-
-        // row 6
-        theGrid.add(new GridElement(R.drawable.led_zeppelin_iv));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("StairWay To Heaven", "Led Zeppelin", "some album", "/Music/stairway_to_heaven.m4a", 1, "test");
-        grid.addSong("Misty Mountain Hop", "Led Zeppelin", "some album", "/Music/misty_mountain_hop.m4a", 1, "test");
-        grid.addSong("When The Levee Breaks", "Led Zeppelin", "some album", "/Music/when_the_levee_breaks.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.dark_side_of_the_moon));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Us And Them", "Pink Floyd", "some album", "/Music/us_and_them.m4a", 1, "test");
-        grid.addSong("Any Colour You Like", "Pink Floyd", "some album", "/Music/any_colour_you_like.m4a", 1, "test");
-        grid.addSong("Brain Damage", "Pink Floyd", "some album", "/Music/brain_damage.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.wish_you_were_here));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Shine On You Crazy Diamond", "Pink Floyd", "some album", "/Music/shine_on_you_crazy_diamond.m4a", 1, "test");
-        grid.addSong("Have A Cigar", "Pink Floyd", "some album", "/Music/have_a_cigar.m4a", 1, "test");
-        grid.addSong("Wish You Were Here", "Pink Floyd", "some album", "/Music/wish_you_were_here.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-
-        // row 7
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.rock_and_soul_part_one));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Sara Smile", "Hall and Oates", "some album", "/Music/sara_smile.m4a", 1, "test");
-        grid.addSong("She's Gone", "Hall and Oates", "some album", "/Music/shes_gone.m4a", 1, "test");
-        grid.addSong("Maneater", "Hall and Oates", "some album", "/Music/maneater.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.bill_withers_greatest_hits));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Ain't No Sunshine", "Bill Withers", "some album", "/Music/aint_no_sunshine.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.leave_your_hat_on));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("I'd Rather Go Blind", "Michael Grimm", "some album", "/Music/id_rather_go_blind.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-
-
-        // row 8
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.eric_clapton_unplugged));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Before You Accuse Me", "Eric Clapton", "some album", "/Music/before_you_accuse_me.m4a", 1, "test");
-        grid.addSong("Layla", "Eric Clapton", "some album", "/Music/layla.m4a", 1, "test");
-        grid.addSong("Running On Faith", "Eric Clapton", "some album", "/Music/running_on_faith.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.twenty_four_nights));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Old Love", "Eric Clapton", "some album", "/Music/old_love.m4a", 1, "test");
-        grid.addSong("Wonderful Tonight", "Eric Clapton", "some album", "/Music/wonderful_tonight.m4a", 1, "test");
-        grid.addSong("Hard Times", "Eric Clapton", "some album", "/Music/hard_times.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-
-        // row 9
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.best_of_hooker_and_heat));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("You Talk Too Much", "Hooker and Heat", "some album", "/Music/you_talk_too_much.m4a", 1, "test");
-        grid.addSong("I Got My Eyes On You", "Hooker and Heat", "some album", "/Music/i_got_my_eyes_on_you.m4a", 1, "test");
-        grid.addSong("Wiskey And Wimmen'", "Hooker and Heat", "some album", "/Music/wiskey_and_wimmen.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.best_of_muddy_waters));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("I Just Want To Make Love To You", "Muddy Waters", "some album", "/Music/i_just_want_to_make_love_to_you.m4a", 1, "test");
-        grid.addSong("Honey Bee", "Muddy Waters", "some album", "/Music/honey_bee.m4a", 1, "test");
-        grid.addSong("Hoochie Coochie Man", "Muddy Waters", "some album", "/Music/hoochie_coochie_man.m4a", 1, "test");
-
-        theGrid.add(new GridElement(R.drawable.live_at_carnegie_hall));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("Dirty Pool", "Stevie Ray Vaughan", "some album", "/Music/dirty_pool.m4a", 1, "test");
-        grid.addSong("The Things That I Used To Do", "Stevie Ray Vaughan", "some album", "/Music/the_things_that_i_used_to_do.m4a", 1, "test");
-        grid.addSong("Lenny", "Stevie Ray Vaughan", "some album",  "/Music/lenny.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-
-        // row 10
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.gang_related));
-        grid = theGrid.get(theGrid.size() - 1);
-        // TODO misspelled this song name to introduce an access error
-        grid.addSong("Staring Through My Rearview", "2Pac", "some album", "/Music/sstaring_through_my_rearview.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.sky_is_crying));
-        grid = theGrid.get(theGrid.size() - 1);
-        grid.addSong("The Sky Is Crying", "Stevie Ray Vaughan", "some album", "/Music/the_sky_is_crying.m4a", 1, "test");
-        grid.addSong("Little Wing", "Stevie Ray Vaughan", "some album", "/Music/little_wing.m4a", 1, "test");
-        grid.addSong("Life By The Drop", "Stevie Ray Vaughan", "some album", "/Music/life_by_the_drop.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-
-
-        // row 11
-        theGrid.add(blankGrid);
-
-        theGrid.add(new GridElement(R.drawable.recovery));
-        grid = theGrid.get(theGrid.size() - 1);
-        // TODO misspelled this song name to introduce an access error
-        grid.addSong("Love The Way You Lie", "Eminim", "some album", "/Music/llove_the_way_you_lie.m4a", 1, "test");
-
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-        theGrid.add(blankGrid);
-        */
-
-        numGridElems = theGrid.size();
+    private void initGrid() {
+        initGridArray(loadGrid(getFirstSaveFile()));
     }
 
     // get view references and setup GridView adapter
@@ -515,8 +149,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         theGridView.setHasFixedSize(true);
 
         // use a grid layout manager
-        RecyclerView.LayoutManager theGridLayoutManager = new GridLayoutManager(this, numGridCols);
-        theGridView.setLayoutManager(theGridLayoutManager);
+        theGridView.setLayoutManager(new GridLayoutManager(this, numGridCols));
 
         gridAdapter = new GridAdapter(this, theGrid);
         theGridView.setAdapter(gridAdapter);
@@ -634,7 +267,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
                             case (R.id.playGridDrawer_ResetPlayedGrids) :   resetGrids(true);
                                                                             break;
 
-                            case (R.id.playGridDrawer_LoadGrid) :           loadGrid(getFirstSaveFile());
+                            case (R.id.playGridDrawer_LoadGrid) :           createLoadMenu();
                                                                             break;
 
                             default :                                       GeneralTools.notSupported(PlayGridActivity.this);
@@ -997,6 +630,8 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     private int getRandomDirIndex() {
         List<Integer> possibleDirs = new ArrayList<>();
 
+        Log.e("ERROR", "curr " + currGridIndex + " numCols " + numGridCols + " numelems " + numGridElems);
+
         // look left
         if ((currGridIndex % numGridCols) != 0) {
             GridElement g = theGrid.get(currGridIndex - 1);
@@ -1022,7 +657,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         }
 
         // look down
-        if ((currGridIndex + numGridCols) <= numGridElems) {
+        if ((currGridIndex + numGridCols) < numGridElems) {
             GridElement g = theGrid.get(currGridIndex + numGridCols);
             if (g.isPlayable()) {
                 possibleDirs.add(currGridIndex + numGridCols);
@@ -1155,8 +790,6 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     }
 
     void setCompletionListener() {
-
-
         mediaPlayer.setOnCompletionListener(songDoneListener);
     }
 
@@ -1212,12 +845,43 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         };
     }
 
-    private String getFirstSaveFile() {
-        String[] files = listSaveFiles();
+    private void createLoadMenu() {
+        PopupMenu loadMenu = new PopupMenu(this, controlStop);
 
-        for (String file : files) {
-            Log.e("FILE", file);
+        for (String item : GeneralTools.listSaveFiles(this)) {
+            loadMenu.getMenu().add(item);
+            if (item.equals(saveFileCurrentlyLoaded)) {
+                // set checked if this is the item we currently have loaded
+                int lastItemPos = loadMenu.getMenu().size() - 1;
+                MenuItem newItem = loadMenu.getMenu().getItem(lastItemPos);
+                newItem.setCheckable(true);
+                newItem.setChecked(true);
+            }
         }
+
+        loadMenu.show();
+
+        loadMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                stopMusic(true);
+                playMusicText.setText("");
+                playSongText.setText("");
+
+                theGrid.clear();
+                gridAdapter.notifyDataSetChanged();
+
+                initGridArray(loadGrid(item.getTitle().toString()));
+                gridAdapter.notifyDataSetChanged();
+
+                playMusicText.setText(getResources().getString(R.string.gridLoaded));
+
+                return true;
+            }
+        });
+    }
+
+    private String getFirstSaveFile() {
+        String[] files = GeneralTools.listSaveFiles(this);
 
         if (files.length > 0) {
             return files[0];
@@ -1226,13 +890,90 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         }
     }
 
+    private void initGridArray(String gridData) {
+        GridElement grid;
+        GridElement blankGrid = new GridElement(getResources().getString(R.string.gridBlank), true);
+        JSONObject gridInput;
+
+        try {
+            gridInput = new JSONObject(gridData);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        int rows;
+
+        try {
+            rows = gridInput.getInt(getResources().getString(R.string.savelabelRows));
+            numGridCols = gridInput.getInt(getResources().getString(R.string.savelabelColumns));
+            theGridView.setLayoutManager(new GridLayoutManager(this, numGridCols));
+
+            JSONArray gridArray = gridInput.getJSONArray(getResources().getString(R.string.savelabelGrids));
+
+            if (gridArray.length() == 0) {
+                Log.e("ERROR", "PlayGridActivity:initGridArray() json grid array length is 0");
+                return;
+            }
+
+            numNotPlayed = numPlayable = gridArray.length();
+
+            int gridArrayIndex = 0;
+            JSONObject jsonGrid = gridArray.getJSONObject(gridArrayIndex);
+            int gRow = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsRow));
+            int gCol = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsColumn));
+
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < numGridCols; j++) {
+                    if ((i != gRow) || (j != gCol)) {
+                        theGrid.add(blankGrid);
+                    } else {
+                        theGrid.add(new GridElement(jsonGrid.getString(getResources().getString(R.string.savelabelGridsCoverart)), false));
+                        grid = theGrid.get(theGrid.size() - 1);
+
+                        JSONArray songArray = jsonGrid.getJSONArray(getResources().getString(R.string.savelabelGridsSongs));
+                        for (int s = 0; s < songArray.length(); s++) {
+                            JSONObject jsonSong = songArray.getJSONObject(s);
+
+                            // TODO hack to skip over storage path which seems to prevent playing of the music file
+                            String path = jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsFilepath));
+                            String skip = "/storage/emulated/0";
+                            path = path.substring(skip.length(), path.length());
+
+                            grid.addSong(jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsName)),
+                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsArtist)),
+                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsAlbum)),
+                                    path,
+                                    jsonSong.getInt(getResources().getString(R.string.savelabelGridsSongsTrack)),
+                                    jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsAlbumID)));
+                        }
+
+                        gridArrayIndex++;
+                        if (gridArrayIndex < gridArray.length()) {
+                            jsonGrid = gridArray.getJSONObject(gridArrayIndex);
+                            gRow = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsRow));
+                            gCol = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsColumn));
+                        } else {
+                            gRow = gCol = -1;
+                        }
+                    }
+                }
+            }
+
+        } catch (JSONException e) {
+            Log.e("ERROR", "JSON EXCEPTION");
+            e.printStackTrace();
+            return;
+        }
+
+        numGridElems = theGrid.size();
+    }
+
     private String loadGrid(String filename) {
         if (filename == null) {
             Log.e("ERROR", "PlayGridActivity:loadGrid received null filename");
             return null;
         }
-
-        GeneralTools.showToast(this, "Loading...");
 
         return readSaveFile(filename);
     }
@@ -1266,10 +1007,10 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
             Log.e("INDATA", inData);
         }
 
+        saveFileCurrentlyLoaded = filename;
+
         return inData;
     }
 
-    private String[] listSaveFiles() {
-        return this.fileList();
-    }
+
 }

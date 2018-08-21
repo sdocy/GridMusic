@@ -20,7 +20,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import org.json.JSONArray;
@@ -87,6 +89,10 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
     private int saveGridNumRows;
     private int saveGridNumCols;
+    private LinearLayout saveMenuView;
+    private LinearLayout savedFilesView;
+    private EditText saveInput;
+    View.OnClickListener saveClickListener;
 
     // view refs
     private TextView infoViewText;
@@ -143,6 +149,10 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         infoButton = findViewById(R.id.createGrid_InfoButton);
 
         numGridsView = findViewById(R.id.createGrid_NumGrids);
+
+        saveMenuView = findViewById(R.id.saveMenuView);
+        savedFilesView = findViewById(R.id.savedFilesView);
+        saveInput = findViewById(R.id.save_input);
     }
 
     // import and display music
@@ -248,7 +258,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
                             case R.id.createGridDrawer_CombineGridsByAlbum :    combineGrids(combineType.album);
                                 break;
 
-                            case R.id.createGridDrawer_SaveGrid :               saveGrid();
+                            case R.id.createGridDrawer_SaveGrid :               showSaveMenu();
                                 break;
 
                             default :                                           GeneralTools.notSupported(CreateGridActivity.this);
@@ -260,6 +270,13 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
                         return true;
                     }
                 });
+
+            saveClickListener = new TextView.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    saveInput.setText(((TextView)v).getText().toString());
+                }
+            };
     }
 
     // display a tip for creating a Grid
@@ -576,15 +593,60 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         infoViewText.setText(R.string.gridRemoved);
     }
 
-    private void saveGrid() {
-        GeneralTools.showToast(this, "Saving...");
+    private void showSaveMenu() {
+        if (savedFilesView.getChildCount() > 0)
+            savedFilesView.removeAllViews();
+
+        LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+        for (String item : GeneralTools.listSaveFiles(this)) {
+            TextView savedFile = new TextView(this);
+            savedFile.setText(item);
+            savedFile.setTextColor(getResources().getColor(R.color.highlightBlue));
+            savedFile.setLines(2);
+            savedFile.setOnClickListener(saveClickListener);
+            savedFilesView.addView(savedFile, lparams);
+        }
+
+        savedFilesView.setLayoutParams(lparams);
+        saveMenuView.setVisibility(View.VISIBLE);
+    }
+
+    public void saveGridData(View v) {
+        String filename = saveInput.getText().toString();
+
+        // delete invalid chars for a file name
+        filename = filename.replaceAll("[^a-zA-Z0-9.\\-]", "");
+
+        if (filename.equals("")) {
+            GeneralTools.showToast(this, getString(R.string.validGridName));
+            return;
+        }
 
         List<GridElement> toSave = createSaveList();
+        if (toSave.size() == 0) {
+            GeneralTools.showToast(this, getString(R.string.addMusic));
+
+            saveInput.setText("");
+            saveMenuView.setVisibility(View.GONE);
+
+            return;
+        }
 
         JSONObject saveData = listToJson(toSave);
 
-        Log.e("ERROR", saveData.toString());
-        writeSaveFile(saveData, "savedGrid");
+        // Log.e("ERROR", saveData.toString());
+
+        writeSaveFile(saveData, filename);
+
+        saveInput.setText("");
+        saveMenuView.setVisibility(View.GONE);
+    }
+
+    public void cancelSave(View v) {
+        saveInput.setText("");
+        saveMenuView.setVisibility(View.GONE);
     }
 
     // find all non-empty grids and compute the bounds of the matrix to hold them

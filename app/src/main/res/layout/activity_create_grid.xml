@@ -111,6 +111,49 @@
                         android:visibility="gone"
                         android:gravity="center"
                         android:text="@string/noMusic"/>
+
+                    <!-- save menu layout -->
+                    <LinearLayout
+                        android:id="@+id/saveMenuView"
+                        android:visibility="gone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/dark_bg"
+                        android:padding="@dimen/gridPadding">
+
+                        <EditText
+                            android:id="@+id/save_input"
+                            style="@style/saveMenu"
+                            android:textSize="20sp"
+                            android:textColor="#000000"
+                            android:maxLength="10"
+                            android:hint="@string/saveGridHint"
+                            android:background="#ffffff"
+                            android:layout_marginBottom="32dp"
+                            android:inputType="textCapWords"/>
+
+                    <!-- layout for list of current saved files -->
+                    <LinearLayout
+                        android:id="@+id/savedFilesView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/gridPadding">
+
+                    </LinearLayout>
+
+                        <TextView
+                            style="@style/saveButton"
+                            android:onClick="saveGridData"
+                            android:text="@string/saveGrid"/>
+
+                        <TextView
+                            style="@style/saveButton"
+                            android:onClick="cancelSave"
+                            android:text="@string/cancel"/>
+
+                    </LinearLayout>
                 </RelativeLayout>
             </HorizontalScrollView>
         </LinearLayout>

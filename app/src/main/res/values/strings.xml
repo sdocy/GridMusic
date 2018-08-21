@@ -35,6 +35,7 @@
     <string name="notSupported">This feature is not available in the trial version.</string>
     <string name="information">information</string>
     <string name="loadGrid">Load Grid</string>
+    <string name="gridLoaded">Grid loaded</string>
 
     <!-- daily playGrid tips -->
     <string name="tip">Tip :</string>
@@ -73,6 +74,7 @@
     <string name="gridDeleted">Grid deleted</string>
     <string name="gridRemoved">Grid removed</string>
     <string name="gridAdded">Grid added</string>
+    <string name="validGridName">Please enter a valid Grid name</string>
 
     <!-- createGrid settings strings -->
     <string name="undeleteLast">Undelete Last</string>
@@ -81,6 +83,9 @@
     <string name="combineByArtist">Combine grids by artist</string>
     <string name="combineByAlbum">Combine grids by album</string>
     <string name="saveGrid">Save Grid</string>
+    <string name="saveGridHint">Grid name</string>
+    <string name="cancel">Cancel</string>
+    <string name="addMusic">Add music to Grid before saving</string>
 
     <!-- Download Art buttons and info msgs -->
     <string name="findAllArt">Find all\ncover art</string>
