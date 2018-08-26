@@ -1,8 +1,10 @@
 package com.example.android.gridmusic;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.ActivityInfo;
@@ -28,8 +30,10 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -90,9 +94,10 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     private int saveGridNumRows;
     private int saveGridNumCols;
     private LinearLayout saveMenuView;
-    private LinearLayout savedFilesView;
+
+    SaveListAdapter saveListAdapter;
+    private RecyclerView saveListView;
     private EditText saveInput;
-    View.OnClickListener saveClickListener;
 
     // view refs
     private TextView infoViewText;
@@ -150,9 +155,9 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         numGridsView = findViewById(R.id.createGrid_NumGrids);
 
-        saveMenuView = findViewById(R.id.saveMenuView);
-        savedFilesView = findViewById(R.id.savedFilesView);
-        saveInput = findViewById(R.id.save_input);
+        saveMenuView = findViewById(R.id.createGrid_SaveMenu);
+        saveListView = findViewById(R.id.createGrid_SaveList);
+        saveInput = findViewById(R.id.createGrid_SaveInput);
     }
 
     // import and display music
@@ -191,10 +196,8 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         // use a linear layout manager
         RecyclerView.LayoutManager gridListLayoutManager = new LinearLayoutManager(this);
         gridListView.setLayoutManager(gridListLayoutManager);
-
         gridListAdapter = new GridListAdapter(this, gridList);
         gridListView.setAdapter(gridListAdapter);
-
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -206,7 +209,6 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         gridAdapter = new GridAdapter(this, theGrid);
         theGridView.setAdapter(gridAdapter);
-
 
         // We just pass in the song list for the first item in gridList to jumpstart
         // gridDetailsAdapter.  It won't actually display anything until we call showGridInfo()
@@ -270,13 +272,10 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
                         return true;
                     }
                 });
+    }
 
-            saveClickListener = new TextView.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    saveInput.setText(((TextView)v).getText().toString());
-                }
-            };
+    public void setSaveEditText(String name) {
+        saveInput.setText(name);
     }
 
     // display a tip for creating a Grid
@@ -594,22 +593,18 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     }
 
     private void showSaveMenu() {
-        if (savedFilesView.getChildCount() > 0)
-            savedFilesView.removeAllViews();
+        // this was causing a crash
+        //if (!saveList.isEmpty()) {
+            //saveList.clear();
+        //}
+        List<String> saveList = Arrays.asList(GeneralTools.listSaveFiles(this));
 
-        LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        // save list recycler view
+        RecyclerView.LayoutManager saveListLayoutManager = new LinearLayoutManager(this);
+        saveListView.setLayoutManager(saveListLayoutManager);
+        saveListAdapter = new SaveListAdapter(this, saveList);
+        saveListView.setAdapter(saveListAdapter);
 
-        for (String item : GeneralTools.listSaveFiles(this)) {
-            TextView savedFile = new TextView(this);
-            savedFile.setText(item);
-            savedFile.setTextColor(getResources().getColor(R.color.highlightBlue));
-            savedFile.setLines(2);
-            savedFile.setOnClickListener(saveClickListener);
-            savedFilesView.addView(savedFile, lparams);
-        }
-
-        savedFilesView.setLayoutParams(lparams);
         saveMenuView.setVisibility(View.VISIBLE);
     }
 
@@ -644,10 +639,45 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         saveMenuView.setVisibility(View.GONE);
     }
 
+    // user canceled the save, clear save edit text field and hide save menu
     public void cancelSave(View v) {
         saveInput.setText("");
         saveMenuView.setVisibility(View.GONE);
     }
+
+    // user clicked 'Delete Saved Grid' button
+    public void deleteSaveFile(View v) {
+        String filename = saveInput.getText().toString();
+
+        if (filename.equals("")) {
+            GeneralTools.showToast(this, getString(R.string.chooseDelete));
+            return;
+        }
+
+        final File file = getFileStreamPath(filename);
+        if (!file.exists()) {
+            GeneralTools.showToast(this, getString(R.string.fileNotFound));
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Save File")
+                .setMessage("Do you really want to delete" + filename + "?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        if (!file.delete()) {
+                            GeneralTools.showToast(CreateGridActivity.this,
+                                    getString(R.string.errorDeleting));
+                        }
+
+                        saveInput.setText("");
+                        saveMenuView.setVisibility(View.GONE);
+                    }})
+                .setNegativeButton(android.R.string.no, null).show();
+    }
+
+
 
     // find all non-empty grids and compute the bounds of the matrix to hold them
     private List<GridElement> createSaveList() {

@@ -8,6 +8,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.Arrays;
 
 // implements methods that will be useful to many activities
 public class GeneralTools {
@@ -49,7 +50,9 @@ public class GeneralTools {
 
     // list all save files
     public static String[] listSaveFiles(Context context) {
-        return context.fileList();
+        String[] files = context.fileList();
+        Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
+        return files;
     }
 
     // briefly highlight text in a TextView
