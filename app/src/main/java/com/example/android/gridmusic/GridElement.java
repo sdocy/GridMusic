@@ -134,4 +134,14 @@ public class GridElement {
     public int numSongs() {
         return songList.size();
     }
+
+    public boolean hasSong(String songName) {
+        for (Song s : songList) {
+            if (songName.equals(s.songName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

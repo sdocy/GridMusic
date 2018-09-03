@@ -25,5 +25,11 @@
         <item
             android:id="@+id/createGridDrawer_SaveGrid"
             android:title="@string/saveGrid" />
+        <item
+            android:id="@+id/createGridDrawer_EditGrid"
+            android:title="@string/editGrid" />
+        <item
+            android:id="@+id/createGridDrawer_MoveGrid"
+            android:title="@string/moveGrid" />
     </group>
 </menu>

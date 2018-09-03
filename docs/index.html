@@ -313,13 +313,14 @@
 	<div class="text-left indentleft">
 		<p><br/><br/>Version 5.0 July 28, 2018</p>
 		<ul>
-			<li>Implemented save grid functionality in Create Grid activity and load grid functionality in Play Grid Activity</li>
+			<li>Implemented save grid functionality in Create Grid activity and load grid functionality in Play Grid Activity
 			<ul>
 				<li>Save data is converted to JSON and written as a string to a save file</li>
 				<li>Play Grid reads in the save file and retrieves the specific JSON values</li>
 				<li>Had to switch GridElement from using drawable resources to exclusively converting a filepath to a bitmap</li>
 				<li>Removed hardcoded grid initialization in Play Grid and all the drawable resources associated with it</li>
 			</ul>
+			</li>
 		</ul>
 		<p>Save grid TODO</p>
 		<ul>
@@ -355,9 +356,22 @@
 
 <div>
 	<div class="text-left indentleft">
+		<p><br/><br/>Version 5.3 Sept 2, 2018</p>
+		<ul>
+			<li>Created class for load save file code, since both Play Grid and Create Grid will need to use it</li>
+			<li>Create Grid - Added the ability to load existing save files and edit them</li>
+			<li>Added ability to shift the Grid up/down and right/left</li>
+		</ul>
+	</div>
+</div>
+
+<div>
+	<div class="text-left indentleft">
 		<p><br/><br/>TODO<br/></p>
 					
 		<ul>
+			<LI>Play Grid - interface for seeing what songs are in a grid</li>
+			<li>Create Grid - prompt to save Grid or auto-save Grid when we need to, i.e. app closing, loading new Grid for editing</li>
 			<li>Play Grid Activity - save current loaded Grid and re-load same Grid next time app is started</li>
 			<li>Interface for editing save files...maybe just load a save file in the Create Grid activity?  But how does this interact with the
 			    left-hand music list?  Do we remove any songs in the loaded save file from the left-hand list?</li>

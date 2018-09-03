@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -94,10 +95,13 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     private int saveGridNumRows;
     private int saveGridNumCols;
     private LinearLayout saveMenuView;
-
     SaveListAdapter saveListAdapter;
     private RecyclerView saveListView;
     private EditText saveInput;
+    private String saveFileCurrentlyLoaded = null;
+    private boolean loadingSaveFileToEdit = false;          // are we loading music to edit a Grid?
+                                                            // triggers Grid load after gridList load
+    private String loadedSaveFileData;                      // data read in from save file for editing
 
     // view refs
     private TextView infoViewText;
@@ -106,6 +110,17 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     private NavigationView optionsDrawer;
     private DrawerLayout optionsDrawerLayout;
     private ImageView infoButton;
+    private LinearLayout moveGridView;
+    private ImageView moveArrowUp;
+    private ImageView moveArrowDown;
+    private ImageView moveArrowLeft;
+    private ImageView moveArrowRight;
+
+    // determine if we can move Grid
+    private int numGridsUp = 0;           // number of grids on upper border
+    private int numGridsDown = 0;         // number of grids on lower border
+    private int numGridsLeft = 0;         // number of grids on left border
+    private int numGridsRight = 0;        // number of grids on right border
 
     private TextView numGridsView;              // number of songs in the gridList
 
@@ -158,6 +173,12 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         saveMenuView = findViewById(R.id.createGrid_SaveMenu);
         saveListView = findViewById(R.id.createGrid_SaveList);
         saveInput = findViewById(R.id.createGrid_SaveInput);
+
+        moveGridView = findViewById(R.id.createGrid_MoveGrid);
+        moveArrowUp = findViewById(R.id.createGrid_MoveUp);
+        moveArrowDown = findViewById(R.id.createGrid_MoveDown);
+        moveArrowLeft = findViewById(R.id.createGrid_MoveLeft);
+        moveArrowRight = findViewById(R.id.createGrid_MoveRight);
     }
 
     // import and display music
@@ -261,6 +282,12 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
                                 break;
 
                             case R.id.createGridDrawer_SaveGrid :               showSaveMenu();
+                                break;
+
+                            case R.id.createGridDrawer_EditGrid :               showEditMenu();
+                                break;
+
+                            case R.id.createGridDrawer_MoveGrid :               showMoveArrows();
                                 break;
 
                             default :                                           GeneralTools.notSupported(CreateGridActivity.this);
@@ -453,8 +480,11 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
     // player pressed a grid on the gridList, highlight it and show details unless this
     // grid was already selected, then unhighlight it and clear details
+    // We don't vibrate if this is called as part of loading a Grid from a save file.
     public void chooseListGrid(int position) {
-        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+        if (!loadingSaveFileToEdit) {
+            GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+        }
 
         if (currGridListIndex != -1) {
             gridList.get(currGridListIndex).filterColor = R.color.filterNotPlayed;
@@ -493,11 +523,15 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
     //      else show info for the pressed grid
     // else
     //      if there is a gridList grid selected, move that grid to the pressed grid
+    //
+    // We don't vibrate if this was called as part of loading a Grid from a save file.
     private void chooseGridGrid(int position) {
         GridElement clickedGrid = theGrid.get(position);
 
         if (!clickedGrid.isEmpty()) {
-            GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+            if (!loadingSaveFileToEdit) {
+                GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+            }
 
             if (currGridListIndex != -1) {
                 // move all songs from the selected gridList grid to this Grid grid
@@ -522,13 +556,17 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         }
 
         theGrid.set(position, gridList.get(currGridListIndex));
-        theGrid.get(position).filterColor = R.color.filterNotPlayed;
-        theGrid.get(position).position = position;
+        clickedGrid.filterColor = R.color.filterNotPlayed;
+        clickedGrid.position = position;
+        clickedGrid.gridCol = position % GRID_CREATE_NUM_COLS;
+        clickedGrid.gridRow = position / GRID_CREATE_NUM_COLS;
         gridAdapter.notifyItemChanged(position);
 
         removeGridListItem(currGridListIndex);
 
         infoViewText.setText(R.string.gridAdded);
+
+        checkGridBoundaries(position, 1);
     }
 
     // When we remove an item from the gridList, the indices will change, so we need to reset
@@ -590,6 +628,258 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         gridAdapter.notifyItemChanged(position);
 
         infoViewText.setText(R.string.gridRemoved);
+
+        checkGridBoundaries(position, -1);
+    }
+
+    // See if we have added or subtracted a grid to/from a Grid boundary
+    // in order to track how the Grid elements may be moved.
+    private void checkGridBoundaries(int position, int change) {
+        if ((position % GRID_CREATE_NUM_COLS) == 0) {
+            numGridsLeft += change;
+            if (numGridsLeft == 1) {
+                moveArrowLeft.setVisibility(View.INVISIBLE);
+            } else  if (numGridsLeft == 0) {
+                moveArrowLeft.setVisibility(View.VISIBLE);
+            }
+        } else if ((position % GRID_CREATE_NUM_COLS) == (GRID_CREATE_NUM_COLS - 1)) {
+            numGridsRight += change;
+            if (numGridsRight == 1) {
+                moveArrowRight.setVisibility(View.INVISIBLE);
+            } else  if (numGridsRight == 0) {
+                moveArrowRight.setVisibility(View.VISIBLE);
+            }
+        }
+
+        if (position < GRID_CREATE_NUM_COLS) {
+            numGridsUp += change;
+            if (numGridsUp == 1) {
+                moveArrowUp.setVisibility(View.INVISIBLE);
+            } else  if (numGridsUp == 0) {
+                moveArrowUp.setVisibility(View.VISIBLE);
+            }
+        } else if (position >= (GRID_CREATE_NUM_COLS * (GRID_CREATE_NUM_ROWS - 1))) {
+            numGridsDown += change;
+            if (numGridsDown == 1) {
+                moveArrowDown.setVisibility(View.INVISIBLE);
+            } else  if (numGridsDown == 0) {
+                moveArrowDown.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void showMoveArrows() {
+        moveGridView.setVisibility(View.VISIBLE);
+    }
+
+    public void moveGridUp(View v) {
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+
+        List<GridElement> toMove = createSaveList(false);
+
+        theGrid.clear();
+
+        initGridArray();
+
+        for (GridElement g : toMove) {
+            g.gridRow--;
+            if (g.gridRow == 0) {
+                numGridsUp++;
+            }
+            int theGridIndex = (g.gridRow * GRID_CREATE_NUM_ROWS) + g.gridCol;
+            g.position = theGridIndex;
+            theGrid.set(theGridIndex, g);
+        }
+
+        gridAdapter.notifyDataSetChanged();
+
+        //adjust number of grids on boundaries
+        numGridsDown = 0;
+        moveArrowDown.setVisibility(View.VISIBLE);
+        if (numGridsUp >0) {
+            moveArrowUp.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    public void moveGridDown(View v) {
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+
+        List<GridElement> toMove = createSaveList(false);
+
+        theGrid.clear();
+
+        initGridArray();
+
+        for (GridElement g : toMove) {
+            g.gridRow++;
+            if (g.gridRow == GRID_CREATE_NUM_ROWS - 1) {
+                numGridsDown++;
+            }
+            int theGridIndex = (g.gridRow * GRID_CREATE_NUM_ROWS) + g.gridCol;
+            g.position = theGridIndex;
+            theGrid.set(theGridIndex, g);
+        }
+
+        gridAdapter.notifyDataSetChanged();
+
+        //adjust number of grids on boundaries
+        numGridsUp = 0;
+        moveArrowUp.setVisibility(View.VISIBLE);
+        if (numGridsDown >0) {
+            moveArrowDown.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    public void moveGridLeft(View v) {
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+
+        List<GridElement> toMove = createSaveList(false);
+
+        theGrid.clear();
+
+        initGridArray();
+
+        for (GridElement g : toMove) {
+            g.gridCol--;
+            if (g.gridCol == 0) {
+                numGridsLeft++;
+            }
+            int theGridIndex = (g.gridRow * GRID_CREATE_NUM_ROWS) + g.gridCol;
+            g.position = theGridIndex;
+            theGrid.set(theGridIndex, g);
+        }
+
+        gridAdapter.notifyDataSetChanged();
+
+        //adjust number of grids on boundaries
+        numGridsRight = 0;
+        moveArrowRight.setVisibility(View.VISIBLE);
+        if (numGridsLeft >0) {
+            moveArrowLeft.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    public void moveGridRight(View v) {
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+
+        List<GridElement> toMove = createSaveList(false);
+
+        theGrid.clear();
+
+        initGridArray();
+
+        for (GridElement g : toMove) {
+            g.gridCol++;
+            if (g.gridCol == GRID_CREATE_NUM_COLS - 1) {
+                numGridsRight++;
+            }
+            int theGridIndex = (g.gridRow * GRID_CREATE_NUM_ROWS) + g.gridCol;
+            g.position = theGridIndex;
+            theGrid.set(theGridIndex, g);
+        }
+
+        gridAdapter.notifyDataSetChanged();
+
+        //adjust number of grids on boundaries
+        numGridsLeft = 0;
+        moveArrowLeft.setVisibility(View.VISIBLE);
+        if (numGridsRight >0) {
+            moveArrowRight.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void showEditMenu() {
+        PopupMenu loadMenu = new PopupMenu(this, infoViewText);
+
+        for (String item : SaveFileLoader.listSaveFiles(this)) {
+            loadMenu.getMenu().add(item);
+            if (item.equals(saveFileCurrentlyLoaded)) {
+                // set checked if this is the item we currently have loaded
+                int lastItemPos = loadMenu.getMenu().size() - 1;
+                MenuItem newItem = loadMenu.getMenu().getItem(lastItemPos);
+                newItem.setCheckable(true);
+                newItem.setChecked(true);
+            }
+        }
+
+        loadMenu.show();
+
+        loadMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                //TODO see if we need to save the current Grid
+
+                gridList.clear();
+                gridListAdapter.notifyDataSetChanged();
+
+                theGrid.clear();
+                initGridArray();
+                gridAdapter.notifyDataSetChanged();
+
+                loadingSaveFileToEdit = true;
+
+                // kick off cursorLoader to get music
+                getLoaderManager().restartLoader(0, null, CreateGridActivity.this);
+
+                loadedSaveFileData = SaveFileLoader.loadGrid(CreateGridActivity.this, item.getTitle().toString());
+                saveFileCurrentlyLoaded = item.getTitle().toString();
+
+                return true;
+            }
+        });
+    }
+
+    private void loadGridArray() {
+        JSONObject gridInput;
+
+        try {
+            gridInput = new JSONObject(loadedSaveFileData);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        try {
+            JSONArray gridArray = gridInput.getJSONArray(getResources().getString(R.string.savelabelGrids));
+            for (int g = 0; g < gridArray.length(); g++) {
+                JSONObject jsonGrid = gridArray.getJSONObject(g);
+                JSONArray songArray = jsonGrid.getJSONArray(getResources().getString(R.string.savelabelGridsSongs));
+                for (int s = 0; s < songArray.length(); s++) {
+                    JSONObject jsonSong = songArray.getJSONObject(s);
+                    String songName = jsonSong.getString(getResources().getString(R.string.savelabelGridsSongsName));
+                    int row = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsRow));
+                    int col = jsonGrid.getInt(getResources().getString(R.string.savelabelGridsColumn));
+                    int theGridIndex = (row * GRID_CREATE_NUM_ROWS) + col;
+
+                    int gridListIndex = findSongInGridList(songName);
+                    if (gridListIndex == -1) {
+                        Log.e("ERROR", "Could not find song");
+                        continue;
+                    }
+
+                    chooseListGrid(gridListIndex);
+                    theGridOnClick(theGridIndex);
+
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+        gridAdapter.notifyDataSetChanged();
+        loadingSaveFileToEdit = false;
+    }
+
+    // search gridList for a song name and return it's index in gridList
+    private  int findSongInGridList(String songName) {
+        for (int i = 0; i < gridList.size(); i++) {
+            if (gridList.get(i).hasSong(songName)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private void showSaveMenu() {
@@ -597,7 +887,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         //if (!saveList.isEmpty()) {
             //saveList.clear();
         //}
-        List<String> saveList = Arrays.asList(GeneralTools.listSaveFiles(this));
+        List<String> saveList = Arrays.asList(SaveFileLoader.listSaveFiles(this));
 
         // save list recycler view
         RecyclerView.LayoutManager saveListLayoutManager = new LinearLayoutManager(this);
@@ -619,7 +909,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
             return;
         }
 
-        List<GridElement> toSave = createSaveList();
+        List<GridElement> toSave = createSaveList(true);
         if (toSave.size() == 0) {
             GeneralTools.showToast(this, getString(R.string.addMusic));
 
@@ -637,6 +927,8 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         saveInput.setText("");
         saveMenuView.setVisibility(View.GONE);
+
+        saveFileCurrentlyLoaded = filename;
     }
 
     // user canceled the save, clear save edit text field and hide save menu
@@ -679,8 +971,9 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
 
 
-    // find all non-empty grids and compute the bounds of the matrix to hold them
-    private List<GridElement> createSaveList() {
+    // Find all non-empty grids and compute the bounds of the matrix to hold them,
+    // only transform coords to smaller matrix if we are saving the Grid, not if we are moving it.
+    private List<GridElement> createSaveList(boolean transform) {
         List<GridElement> saveGrid = new ArrayList<>();
         int maxRow = -1, minRow = GRID_CREATE_NUM_ROWS;
         int maxCol = -1, minCol = GRID_CREATE_NUM_COLS;
@@ -722,7 +1015,9 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         // Transform grid coords to smaller matrix.
         // We have to do this after reading the entire grid because we
         // don't know minCol until we have read the entire grid.
-        transformCoords(minRow, minCol, saveGrid);
+        if (transform) {
+            transformCoords(minRow, minCol, saveGrid);
+        }
 
         return saveGrid;
     }
@@ -874,6 +1169,10 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
                 cursorArt.close();
             }
+        }
+
+        if (loadingSaveFileToEdit) {
+            loadGridArray();
         }
     }
 

@@ -20,10 +20,6 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -115,7 +111,9 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
 
     // setup the Grid
     private void initGrid() {
-        initGridArray(loadGrid(getFirstSaveFile()));
+        String filename = getFirstSaveFile();
+        loadGridArray(SaveFileLoader.loadGrid(this, filename));
+        saveFileCurrentlyLoaded = filename;
     }
 
     // get view references and setup GridView adapter
@@ -267,7 +265,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
                             case (R.id.playGridDrawer_ResetPlayedGrids) :   resetGrids(true);
                                                                             break;
 
-                            case (R.id.playGridDrawer_LoadGrid) :           createLoadMenu();
+                            case (R.id.playGridDrawer_LoadGrid) :           showLoadMenu();
                                                                             break;
 
                             default :                                       GeneralTools.notSupported(PlayGridActivity.this);
@@ -845,10 +843,10 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         };
     }
 
-    private void createLoadMenu() {
+    private void showLoadMenu() {
         PopupMenu loadMenu = new PopupMenu(this, controlStop);
 
-        for (String item : GeneralTools.listSaveFiles(this)) {
+        for (String item : SaveFileLoader.listSaveFiles(this)) {
             loadMenu.getMenu().add(item);
             if (item.equals(saveFileCurrentlyLoaded)) {
                 // set checked if this is the item we currently have loaded
@@ -868,9 +866,8 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
                 playSongText.setText("");
 
                 theGrid.clear();
-                gridAdapter.notifyDataSetChanged();
-
-                initGridArray(loadGrid(item.getTitle().toString()));
+                loadGridArray(SaveFileLoader.loadGrid(PlayGridActivity.this, item.getTitle().toString()));
+                saveFileCurrentlyLoaded = item.getTitle().toString();
                 gridAdapter.notifyDataSetChanged();
 
                 playMusicText.setText(getResources().getString(R.string.gridLoaded));
@@ -881,7 +878,7 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
     }
 
     private String getFirstSaveFile() {
-        String[] files = GeneralTools.listSaveFiles(this);
+        String[] files = SaveFileLoader.listSaveFiles(this);
 
         if (files.length > 0) {
             return files[0];
@@ -890,7 +887,8 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
         }
     }
 
-    private void initGridArray(String gridData) {
+
+    private void loadGridArray(String gridData) {
         GridElement grid;
         GridElement blankGrid = new GridElement(getResources().getString(R.string.gridBlank), true);
         JSONObject gridInput;
@@ -968,49 +966,5 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
 
         numGridElems = theGrid.size();
     }
-
-    private String loadGrid(String filename) {
-        if (filename == null) {
-            Log.e("ERROR", "PlayGridActivity:loadGrid received null filename");
-            return null;
-        }
-
-        return readSaveFile(filename);
-    }
-
-    private String readSaveFile(String filename) {
-        String inData = null;
-
-        try {
-            FileInputStream inputStream = openFileInput(filename);
-            int size = inputStream.available();
-
-            byte[] buffer = new byte[size];
-
-            int sizeRead = inputStream.read(buffer);
-            if (sizeRead != size) {
-                Log.e("ERROOR", "PlayGridActivity:readSaveFile read " + sizeRead + " out of " + size + " bytes");
-            }
-
-            inputStream.close();
-
-            inData = new String(buffer, "UTF-8");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (inData != null) {
-            Log.e("INDATA", inData);
-        }
-
-        saveFileCurrentlyLoaded = filename;
-
-        return inData;
-    }
-
 
 }

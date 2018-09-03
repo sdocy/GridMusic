@@ -166,6 +166,56 @@
                 android:layout_height="wrap_content"
                 android:scrollbars="vertical" />
         </LinearLayout>
+
+        <!-- save menu layout -->
+        <LinearLayout
+            android:id="@+id/createGrid_MoveGrid"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:alpha="0.7"
+            android:background="@drawable/dark_bg"
+            android:padding="@dimen/gridPadding">
+            <ImageView
+                android:id="@+id/createGrid_MoveUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/upArrow"
+                android:onClick="moveGridUp"
+                android:src="@drawable/arrow_up"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/gridPadding">
+                <ImageView
+                    android:id="@+id/createGrid_MoveLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/leftArrow"
+                    android:onClick="moveGridLeft"
+                    android:src="@drawable/arrow"/>
+                <ImageView
+                    android:id="@+id/createGrid_MoveRight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/rightArrow"
+                    android:onClick="moveGridRight"
+                    android:src="@drawable/arrow_right"/>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/createGrid_MoveDown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/downArrow"
+                android:onClick="moveGridDown"
+                android:src="@drawable/arrow_down"/>
+        </LinearLayout>
     </RelativeLayout>
 
     <android.support.design.widget.NavigationView

@@ -8,7 +8,6 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.util.Arrays;
 
 // implements methods that will be useful to many activities
 public class GeneralTools {
@@ -46,13 +45,6 @@ public class GeneralTools {
     // common message to show for non-supported functions
     public static void notSupported(Context context) {
         showToast(context, context.getString(R.string.notSupported));
-    }
-
-    // list all save files
-    public static String[] listSaveFiles(Context context) {
-        String[] files = context.fileList();
-        Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
-        return files;
     }
 
     // briefly highlight text in a TextView
