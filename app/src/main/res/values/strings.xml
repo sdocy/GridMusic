@@ -96,6 +96,7 @@
     <string name="downArrow">Down Arrow</string>
     <string name="leftArrow">Left Arrow</string>
     <string name="rightArrow">Right Arrow</string>
+    <string name="closeWindow">Close window</string>
 
     <!-- Download Art buttons and info msgs -->
     <string name="findAllArt">Find all\ncover art</string>

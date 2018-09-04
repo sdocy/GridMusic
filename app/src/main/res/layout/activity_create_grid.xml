@@ -167,7 +167,7 @@
                 android:scrollbars="vertical" />
         </LinearLayout>
 
-        <!-- save menu layout -->
+        <!-- move Grid layout -->
         <LinearLayout
             android:id="@+id/createGrid_MoveGrid"
             android:visibility="gone"
@@ -179,6 +179,15 @@
             android:alpha="0.7"
             android:background="@drawable/dark_bg"
             android:padding="@dimen/gridPadding">
+            <ImageView
+                android:id="@+id/createGrid_CloseWindow"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="end"
+                android:contentDescription="@string/closeWindow"
+                android:onClick="hideMoveArrows"
+                android:src="@drawable/close_window"/>
+
             <ImageView
                 android:id="@+id/createGrid_MoveUp"
                 android:layout_width="wrap_content"

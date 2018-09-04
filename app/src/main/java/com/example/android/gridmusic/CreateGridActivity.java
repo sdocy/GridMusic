@@ -672,6 +672,11 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         moveGridView.setVisibility(View.VISIBLE);
     }
 
+    public void hideMoveArrows(View v) {
+        GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+        moveGridView.setVisibility(View.INVISIBLE);
+    }
+
     public void moveGridUp(View v) {
         GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
 
