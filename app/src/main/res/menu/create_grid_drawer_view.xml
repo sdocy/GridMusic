@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/createGridDrawer_SaveGroup"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/createGridDrawer_SaveGrid"
+            android:title="@string/saveGrid" />
+        <item
+            android:id="@+id/createGridDrawer_EditGrid"
+            android:title="@string/editGrid" />
+        <item
+            android:id="@+id/createGridDrawer_MoveGrid"
+            android:title="@string/moveGrid" />
+    </group>
+
     <group android:id="@+id/createGridDrawer_UndeleteGroup"
         android:checkableBehavior="none">
         <item
@@ -18,18 +31,5 @@
         <item
             android:id="@+id/createGridDrawer_CombineGridsByAlbum"
             android:title="@string/combineByAlbum" />
-    </group>
-
-    <group android:id="@+id/createGridDrawer_SaveGroup"
-        android:checkableBehavior="none">
-        <item
-            android:id="@+id/createGridDrawer_SaveGrid"
-            android:title="@string/saveGrid" />
-        <item
-            android:id="@+id/createGridDrawer_EditGrid"
-            android:title="@string/editGrid" />
-        <item
-            android:id="@+id/createGridDrawer_MoveGrid"
-            android:title="@string/moveGrid" />
     </group>
 </menu>

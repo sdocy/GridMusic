@@ -870,8 +870,6 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
             e.printStackTrace();
         }
 
-
-
         gridAdapter.notifyDataSetChanged();
         loadingSaveFileToEdit = false;
     }
@@ -934,6 +932,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
         saveMenuView.setVisibility(View.GONE);
 
         saveFileCurrentlyLoaded = filename;
+        infoViewText.setText(R.string.gridSaved);
     }
 
     // user canceled the save, clear save edit text field and hide save menu
@@ -1149,7 +1148,9 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
             initListeners();
 
-            initTips();
+            if (!loadingSaveFileToEdit) {
+                initTips();
+            }
         }
 
         // get album art
@@ -1178,6 +1179,7 @@ public class CreateGridActivity extends AppCompatActivity implements TheGridClic
 
         if (loadingSaveFileToEdit) {
             loadGridArray();
+            infoViewText.setText(R.string.gridLoaded);
         }
     }
 

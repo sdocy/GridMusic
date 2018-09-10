@@ -36,6 +36,7 @@
     <string name="information">information</string>
     <string name="loadGrid">Load Grid</string>
     <string name="gridLoaded">Grid loaded</string>
+    <string name="gridSaved">Grid saved</string>
 
     <!-- daily playGrid tips -->
     <string name="tip">Tip :</string>

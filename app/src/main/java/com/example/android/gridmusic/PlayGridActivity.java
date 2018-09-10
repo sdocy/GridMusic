@@ -168,6 +168,9 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
                     case R.id.playGrid_Control_SkipFastforward :    skipFastForward();
                         break;
 
+                    case R.id.playGrid_Control_SkipRewind :         restartSong();
+                        break;
+
                     case R.id.playGrid_BackArrow :                  goBackToMainMenu();
                         break;
 
@@ -401,6 +404,25 @@ public class PlayGridActivity extends AppCompatActivity implements TheGridClicks
 
             // trigger song completion so the app will pick the next song
             songDoneListener.onCompletion(mediaPlayer);
+        }
+    }
+
+    // user pressed skip-rewind
+    // stop song and restart from beginning
+    private void restartSong() {
+        if (mediaPlayer != null) {
+            GeneralTools.vibrate(this, GeneralTools.touchVibDelay);
+
+            // we might be paused, transition back to playing
+            playingMusic = true;
+
+            // flashy flash the `skip-fastfforward` button when you press it
+            controlSkipRewind.setColorFilter(Color.WHITE);
+            handler.postDelayed(turnOffFilter(controlSkipRewind), 100);
+
+            mediaPlayer.pause();
+            mediaPlayer.seekTo(0);
+            mediaPlayer.start();
         }
     }
 
